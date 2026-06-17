@@ -1,3 +1,4 @@
+using SidePortal.Configuration;
 using UnityEngine;
 
 namespace SidePortal.Player
@@ -5,16 +6,8 @@ namespace SidePortal.Player
     [RequireComponent(typeof(Rigidbody2D))]
     public sealed class PlayerController : MonoBehaviour
     {
-        [SerializeField] private float moveSpeed = 8f;
-        [SerializeField] private float jumpImpulse = 11.5f;
-        [SerializeField] private float risingGravityScale = 2.8f;
-        [SerializeField] private float fallingGravityScale = 5.2f;
-        [SerializeField] private float maxFallSpeed = 18f;
-        [SerializeField] private float jumpBufferTime = 0.12f;
-        [SerializeField] private float coyoteTime = 0.1f;
-        [SerializeField] private float jumpCutMultiplier = 0.45f;
+        [SerializeField] private PlayerPhysicsConfig physics = PlayerPhysicsConfig.Default;
         [SerializeField] private Transform groundCheck;
-        [SerializeField] private Vector2 groundCheckSize = new Vector2(0.7f, 0.08f);
         [SerializeField] private LayerMask groundMask;
 
         private Rigidbody2D body;
@@ -23,6 +16,12 @@ namespace SidePortal.Player
         private bool jumpCutQueued;
 
         public bool IsGrounded { get; private set; }
+        public PlayerPhysicsConfig Physics => physics;
+
+        public void ConfigurePhysics(PlayerPhysicsConfig config)
+        {
+            physics = PrototypeTuning.EnsurePlayerPhysics(config);
+        }
 
         public void ConfigureGroundCheck(Transform check, LayerMask mask)
         {
@@ -32,15 +31,21 @@ namespace SidePortal.Player
 
         private void Awake()
         {
+            physics = PrototypeTuning.EnsurePlayerPhysics(physics);
             body = GetComponent<Rigidbody2D>();
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
+        }
+
+        private void OnValidate()
+        {
+            physics = PrototypeTuning.EnsurePlayerPhysics(physics);
         }
 
         private void Update()
         {
             if (Input.GetButtonDown("Jump") || Input.GetKeyDown(KeyCode.Space))
             {
-                jumpBufferCounter = jumpBufferTime;
+                jumpBufferCounter = physics.JumpBufferTime;
             }
             else
             {
@@ -56,27 +61,27 @@ namespace SidePortal.Player
         private void FixedUpdate()
         {
             IsGrounded = CheckGrounded();
-            coyoteCounter = IsGrounded ? coyoteTime : coyoteCounter - Time.fixedDeltaTime;
+            coyoteCounter = IsGrounded ? physics.CoyoteTime : coyoteCounter - Time.fixedDeltaTime;
 
             var velocity = body.velocity;
-            velocity.x = Input.GetAxisRaw("Horizontal") * moveSpeed;
+            velocity.x = Input.GetAxisRaw("Horizontal") * physics.MoveSpeed;
 
             if (jumpBufferCounter > 0f && coyoteCounter > 0f)
             {
-                velocity.y = jumpImpulse;
+                velocity.y = physics.JumpImpulse;
                 jumpBufferCounter = 0f;
                 coyoteCounter = 0f;
             }
 
             if (jumpCutQueued && velocity.y > 0f)
             {
-                velocity.y *= jumpCutMultiplier;
+                velocity.y *= physics.JumpCutMultiplier;
             }
 
-            body.gravityScale = velocity.y > 0f ? risingGravityScale : fallingGravityScale;
-            if (velocity.y < -maxFallSpeed)
+            body.gravityScale = velocity.y > 0f ? physics.RisingGravityScale : physics.FallingGravityScale;
+            if (velocity.y < -physics.MaxFallSpeed)
             {
-                velocity.y = -maxFallSpeed;
+                velocity.y = -physics.MaxFallSpeed;
             }
 
             body.velocity = velocity;
@@ -90,7 +95,7 @@ namespace SidePortal.Player
                 return false;
             }
 
-            return Physics2D.OverlapBox(groundCheck.position, groundCheckSize, 0f, groundMask) != null;
+            return Physics2D.OverlapBox(groundCheck.position, physics.GroundCheckSize, 0f, groundMask) != null;
         }
 
         private void OnDrawGizmosSelected()
@@ -101,7 +106,7 @@ namespace SidePortal.Player
             }
 
             Gizmos.color = Color.green;
-            Gizmos.DrawWireCube(groundCheck.position, groundCheckSize);
+            Gizmos.DrawWireCube(groundCheck.position, physics.GroundCheckSize);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System.IO;
+using SidePortal.Configuration;
 using SidePortal.Debugging;
 using SidePortal.Level;
 using SidePortal.Player;
@@ -107,12 +108,7 @@ namespace SidePortal.EditorTools
 
             var portal = root.AddComponent<Portal>();
             SetPrivate(portal, "primary", primary);
-            SetPrivate(portal, "exitOffset", 1.1f);
-            SetPrivate(portal, "teleportCooldown", 0.22f);
-            SetPrivate(portal, "minExitSpeed", 4f);
-            SetPrivate(portal, "exitClearancePadding", 0.2f);
-            SetPrivate(portal, "maxExitSpeed", 16f);
-            SetPrivate(portal, "maxDownwardExitSpeed", 10f);
+            portal.ConfigureMomentum(PrototypeTuning.PortalMomentum);
 
             var prefab = SavePrefab(root, path).GetComponent<Portal>();
             Object.DestroyImmediate(root);
@@ -155,10 +151,11 @@ namespace SidePortal.EditorTools
 
         private static GameObject CreatePlayerPrefab(Sprite sprite, Portal primaryPortal, Portal secondaryPortal)
         {
+            var scale = PrototypeTuning.LevelDesignScale;
             var root = new GameObject("Player");
             root.tag = "Player";
             root.layer = PlayerLayer;
-            root.transform.localScale = new Vector3(0.85f, 1.55f, 1f);
+            root.transform.localScale = new Vector3(scale.PlayerWidth, scale.PlayerHeight, 1f);
 
             var renderer = root.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
@@ -181,6 +178,7 @@ namespace SidePortal.EditorTools
             fireOrigin.transform.localPosition = new Vector3(0.42f, 0.08f, 0f);
 
             var controller = root.AddComponent<PlayerController>();
+            controller.ConfigurePhysics(PrototypeTuning.PlayerPhysics);
             SetPrivate(controller, "groundCheck", groundCheck.transform);
             SetPrivate(controller, "groundMask", (LayerMask)(1 << SolidLayer));
 
@@ -215,14 +213,15 @@ namespace SidePortal.EditorTools
 
             var cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
+            var cameraView = PrototypeTuning.CameraView;
             var camera = cameraObject.AddComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 4.15f;
+            camera.orthographicSize = cameraView.OrthographicSize;
             camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
-            cameraObject.transform.position = new Vector3(1f, 1f, -10f);
+            cameraObject.transform.position = new Vector3(1f, 1f, cameraView.FollowOffset.z);
             var follow = cameraObject.AddComponent<SimpleCameraFollow>();
             follow.SetTarget(player.transform);
-            follow.Configure(0.08f, new Vector2(-8f, -1.5f), new Vector2(16f, 5f));
+            follow.Configure(cameraView, new Vector2(-8f, -1.5f), new Vector2(16f, 5f));
 
             var debugObject = new GameObject("PortalDebugOverlay");
             var overlay = debugObject.AddComponent<PortalDebugOverlay>();

@@ -1,3 +1,4 @@
+using SidePortal.Configuration;
 using SidePortal.Debugging;
 using SidePortal.Player;
 using SidePortal.Portals;
@@ -93,16 +94,18 @@ namespace SidePortal.Level
 
             var portal = portalObject.AddComponent<Portal>();
             portal.Configure(primary, null, Vector2.zero, Vector2.right);
+            portal.ConfigureMomentum(PrototypeTuning.PortalMomentum);
             return portal;
         }
 
         private PlayerController CreatePlayer(Portal primaryPortalPrefab, Portal secondaryPortalPrefab)
         {
+            var scale = PrototypeTuning.LevelDesignScale;
             var playerObject = new GameObject("Player");
             playerObject.tag = "Player";
             playerObject.layer = PlayerLayer;
             playerObject.transform.position = new Vector3(-6f, -1.25f, 0f);
-            playerObject.transform.localScale = new Vector3(0.85f, 1.55f, 1f);
+            playerObject.transform.localScale = new Vector3(scale.PlayerWidth, scale.PlayerHeight, 1f);
 
             var renderer = playerObject.AddComponent<SpriteRenderer>();
             renderer.sprite = playerSprite;
@@ -125,6 +128,7 @@ namespace SidePortal.Level
             fireOrigin.transform.localPosition = new Vector3(0.42f, 0.08f, 0f);
 
             var controller = playerObject.AddComponent<PlayerController>();
+            controller.ConfigurePhysics(PrototypeTuning.PlayerPhysics);
             controller.ConfigureGroundCheck(groundCheck.transform, (LayerMask)(1 << SolidLayer));
 
             var validator = playerObject.AddComponent<PortalPlacementValidator>();
@@ -141,18 +145,19 @@ namespace SidePortal.Level
 
         private void CreateCamera(Transform target)
         {
+            var cameraView = PrototypeTuning.CameraView;
             var cameraObject = new GameObject("Main Camera");
             cameraObject.tag = "MainCamera";
-            cameraObject.transform.position = new Vector3(1f, 1f, -10f);
+            cameraObject.transform.position = new Vector3(1f, 1f, cameraView.FollowOffset.z);
 
             var camera = cameraObject.AddComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 4.15f;
+            camera.orthographicSize = cameraView.OrthographicSize;
             camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
 
             var follow = cameraObject.AddComponent<SimpleCameraFollow>();
             follow.SetTarget(target);
-            follow.Configure(0.08f, new Vector2(-8f, -1.5f), new Vector2(16f, 5f));
+            follow.Configure(cameraView, new Vector2(-8f, -1.5f), new Vector2(16f, 5f));
         }
 
         private static void CreateDebugOverlay(PlayerController player)

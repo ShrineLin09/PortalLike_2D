@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using SidePortal.Configuration;
 using SidePortal.Portals;
 using UnityEngine;
 
@@ -38,6 +39,16 @@ namespace SidePortal.Tests.EditMode
 
             Assert.That(result.x, Is.EqualTo(2f).Within(0.001f));
             Assert.That(result.y, Is.EqualTo(-10f).Within(0.001f));
+        }
+
+        [Test]
+        public void ClampExitVelocity_UsesPortalMomentumDefaults()
+        {
+            var momentum = PrototypeTuning.PortalMomentum;
+            var result = TeleportResolver.ClampExitVelocity(new Vector2(24f, -24f), momentum.MaxExitSpeed, momentum.MaxDownwardExitSpeed);
+
+            Assert.That(result.magnitude, Is.LessThanOrEqualTo(momentum.MaxExitSpeed + 0.001f));
+            Assert.That(result.y, Is.GreaterThanOrEqualTo(-momentum.MaxDownwardExitSpeed - 0.001f));
         }
     }
 }

@@ -1,3 +1,4 @@
+using SidePortal.Configuration;
 using SidePortal.Debugging;
 using SidePortal.Level;
 using SidePortal.Player;
@@ -133,16 +134,18 @@ namespace SidePortal.GridLevel
 
             var portal = portalObject.AddComponent<Portal>();
             portal.Configure(primary, null, Vector2.zero, Vector2.right);
+            portal.ConfigureMomentum(PrototypeTuning.PortalMomentum);
             return portal;
         }
 
         private PlayerController CreatePlayer(GridLevelData data, Portal primaryPortalPrefab, Portal secondaryPortalPrefab)
         {
+            var scale = PrototypeTuning.LevelDesignScale;
             var playerObject = CreateChild("Player");
             playerObject.tag = "Player";
             playerObject.layer = PlayerLayer;
             playerObject.transform.position = CellCenter(data.PlayerSpawn, data.CellSize);
-            playerObject.transform.localScale = new Vector3(0.85f, 1.55f, 1f);
+            playerObject.transform.localScale = new Vector3(scale.PlayerWidth, scale.PlayerHeight, 1f);
 
             var renderer = playerObject.AddComponent<SpriteRenderer>();
             renderer.sprite = playerSprite;
@@ -165,6 +168,7 @@ namespace SidePortal.GridLevel
             fireOrigin.transform.localPosition = new Vector3(0.42f, 0.08f, 0f);
 
             var controller = playerObject.AddComponent<PlayerController>();
+            controller.ConfigurePhysics(PrototypeTuning.PlayerPhysics);
             controller.ConfigureGroundCheck(groundCheck.transform, (LayerMask)(1 << SolidLayer));
 
             var validator = playerObject.AddComponent<PortalPlacementValidator>();
@@ -177,18 +181,19 @@ namespace SidePortal.GridLevel
 
         private void CreateCamera(Transform target, GridLevelData data)
         {
+            var cameraView = PrototypeTuning.CameraView;
             var cameraObject = CreateChild("Main Camera");
             cameraObject.tag = "MainCamera";
-            cameraObject.transform.position = new Vector3(data.Width * data.CellSize * 0.5f, data.Height * data.CellSize * 0.45f, -10f);
+            cameraObject.transform.position = new Vector3(data.Width * data.CellSize * 0.5f, data.Height * data.CellSize * 0.45f, cameraView.FollowOffset.z);
 
             var camera = cameraObject.AddComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 4.15f;
+            camera.orthographicSize = cameraView.OrthographicSize;
             camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
 
             var follow = cameraObject.AddComponent<SimpleCameraFollow>();
             follow.SetTarget(target);
-            follow.Configure(0.08f, new Vector2(0f, 0f), new Vector2(data.Width * data.CellSize, data.Height * data.CellSize));
+            follow.Configure(cameraView, new Vector2(0f, 0f), new Vector2(data.Width * data.CellSize, data.Height * data.CellSize));
         }
 
         private void CreateDebugOverlay(PlayerController player)

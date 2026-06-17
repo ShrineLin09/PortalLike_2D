@@ -1,3 +1,4 @@
+using SidePortal.Configuration;
 using UnityEngine;
 
 namespace SidePortal.Portals
@@ -7,16 +8,12 @@ namespace SidePortal.Portals
     {
         [SerializeField] private bool primary;
         [SerializeField] private Portal linkedPortal;
-        [SerializeField] private float exitOffset = 0.85f;
-        [SerializeField] private float teleportCooldown = 0.18f;
-        [SerializeField] private float minExitSpeed = 3f;
-        [SerializeField] private float exitClearancePadding = 0.2f;
-        [SerializeField] private float maxExitSpeed = 16f;
-        [SerializeField] private float maxDownwardExitSpeed = 10f;
+        [SerializeField] private PortalMomentumConfig momentum = PortalMomentumConfig.Default;
 
         private float lastTeleportTime = -999f;
 
         public bool IsPrimary => primary;
+        public PortalMomentumConfig Momentum => momentum;
         public Portal LinkedPortal
         {
             get => linkedPortal;
@@ -33,6 +30,21 @@ namespace SidePortal.Portals
             transform.right = normal;
         }
 
+        public void ConfigureMomentum(PortalMomentumConfig config)
+        {
+            momentum = PrototypeTuning.EnsurePortalMomentum(config);
+        }
+
+        private void Awake()
+        {
+            momentum = PrototypeTuning.EnsurePortalMomentum(momentum);
+        }
+
+        private void OnValidate()
+        {
+            momentum = PrototypeTuning.EnsurePortalMomentum(momentum);
+        }
+
         private void Reset()
         {
             var trigger = GetComponent<Collider2D>();
@@ -41,7 +53,7 @@ namespace SidePortal.Portals
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (linkedPortal == null || Time.time < lastTeleportTime + teleportCooldown)
+            if (linkedPortal == null || Time.time < lastTeleportTime + momentum.TeleportCooldown)
             {
                 return;
             }
@@ -57,10 +69,10 @@ namespace SidePortal.Portals
         private void Teleport(Rigidbody2D body)
         {
             var linkedExitNormal = (Vector2)linkedPortal.ExitNormal;
-            var safeExitOffset = Mathf.Max(exitOffset, GetBodyExtentAlongNormal(body, linkedExitNormal) + exitClearancePadding);
+            var safeExitOffset = Mathf.Max(momentum.ExitOffset, GetBodyExtentAlongNormal(body, linkedExitNormal) + momentum.ExitClearancePadding);
             var exitPosition = TeleportResolver.ExitPosition(linkedPortal.transform.position, linkedExitNormal, safeExitOffset);
-            var exitVelocity = TeleportResolver.RemapVelocity(body.velocity, ExitNormal, linkedExitNormal, minExitSpeed);
-            exitVelocity = TeleportResolver.ClampExitVelocity(exitVelocity, maxExitSpeed, maxDownwardExitSpeed);
+            var exitVelocity = TeleportResolver.RemapVelocity(body.velocity, ExitNormal, linkedExitNormal, momentum.MinExitSpeed);
+            exitVelocity = TeleportResolver.ClampExitVelocity(exitVelocity, momentum.MaxExitSpeed, momentum.MaxDownwardExitSpeed);
 
             body.position = exitPosition;
             body.velocity = exitVelocity;
