@@ -28,19 +28,19 @@ namespace SidePortal.Debugging
 
             if (player != null)
             {
-                GUILayout.Label($"Aim: {player.AimDirection}");
                 GUILayout.Label($"Grounded: {player.IsGrounded}");
             }
 
             if (portalGun != null)
             {
                 var result = portalGun.LastPlacementResult;
+                GUILayout.Label($"Mouse aim: {portalGun.CurrentMouseAimDirection}");
                 GUILayout.Label($"Last placement: {(result.Success ? "Accepted" : result.Failure.ToString())}");
-                GUILayout.Label($"Hit: {result.HitPoint} Normal: {result.Normal}");
+                GUILayout.Label($"Hit: {result.HitPoint} Normal: {result.Normal} Anchor: {result.AnchorName}");
                 GUILayout.Label(result.Message);
             }
 
-            GUILayout.Label("Controls: A/D move, Space jump, arrows/WASD aim, Q/E portals, R restart");
+            GUILayout.Label("Controls: A/D move, Space jump, LMB blue, RMB yellow, R restart");
             GUILayout.EndArea();
         }
     }

@@ -7,7 +7,7 @@ namespace SidePortal.Level
 {
     public sealed class VerticalSliceRuntimeBootstrap : MonoBehaviour
     {
-        private const int PortalSurfaceLayer = 6;
+        private const int PortalAnchorLayer = 6;
         private const int SolidLayer = 7;
         private const int PortalLayer = 8;
         private const int PlayerLayer = 9;
@@ -19,6 +19,7 @@ namespace SidePortal.Level
         private Sprite primaryPortalSprite;
         private Sprite secondaryPortalSprite;
         private Sprite exitSprite;
+        private Sprite anchorSprite;
 
         private void Awake()
         {
@@ -30,6 +31,7 @@ namespace SidePortal.Level
 
         public void Build()
         {
+            Physics2D.queriesHitTriggers = true;
             CreateSprites();
 
             var levelManager = new GameObject("LevelManager");
@@ -49,6 +51,9 @@ namespace SidePortal.Level
             CreateBlock("ExitBackWall", new Vector2(16.5f, 0f), new Vector2(0.8f, 5f));
             CreateBlock("Ceiling", new Vector2(4f, 5f), new Vector2(24f, 1f));
             CreateBlock("HighMomentumDrop", new Vector2(-6f, 2.6f), new Vector2(2.5f, 0.6f));
+            CreateAnchor("StartAnchor", new Vector2(-8.02f, -0.55f), Vector2.right, true, true);
+            CreateAnchor("ExitAnchor", new Vector2(16.02f, -0.55f), Vector2.left, true, true);
+            CreateAnchor("CeilingAnchor", new Vector2(-6f, 2.22f), Vector2.down, true, true);
             CreateExit(completeOverlay);
         }
 
@@ -59,6 +64,7 @@ namespace SidePortal.Level
             primaryPortalSprite = CreateSprite(new Color32(66, 180, 255, 255));
             secondaryPortalSprite = CreateSprite(new Color32(255, 142, 45, 255));
             exitSprite = CreateSprite(new Color32(104, 225, 119, 255));
+            anchorSprite = CreateSprite(new Color32(160, 220, 255, 115));
         }
 
         private static Sprite CreateSprite(Color32 color)
@@ -96,7 +102,7 @@ namespace SidePortal.Level
             playerObject.tag = "Player";
             playerObject.layer = PlayerLayer;
             playerObject.transform.position = new Vector3(-6f, -1.25f, 0f);
-            playerObject.transform.localScale = new Vector3(0.75f, 1.4f, 1f);
+            playerObject.transform.localScale = new Vector3(0.85f, 1.55f, 1f);
 
             var renderer = playerObject.AddComponent<SpriteRenderer>();
             renderer.sprite = playerSprite;
@@ -118,12 +124,12 @@ namespace SidePortal.Level
             fireOrigin.transform.localPosition = new Vector3(0.42f, 0.08f, 0f);
 
             var controller = playerObject.AddComponent<PlayerController>();
-            controller.ConfigureGroundCheck(groundCheck.transform, (LayerMask)((1 << PortalSurfaceLayer) | (1 << SolidLayer)));
+            controller.ConfigureGroundCheck(groundCheck.transform, (LayerMask)(1 << SolidLayer));
 
             var validator = playerObject.AddComponent<PortalPlacementValidator>();
             validator.ConfigureMasks(
-                (LayerMask)(1 << PortalSurfaceLayer),
-                (LayerMask)((1 << PortalSurfaceLayer) | (1 << SolidLayer)),
+                (LayerMask)(1 << PortalAnchorLayer),
+                (LayerMask)(1 << SolidLayer),
                 (LayerMask)(1 << PortalLayer));
 
             var gun = playerObject.AddComponent<PortalGun>();
@@ -140,11 +146,12 @@ namespace SidePortal.Level
 
             var camera = cameraObject.AddComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 5f;
+            camera.orthographicSize = 4.15f;
             camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
 
             var follow = cameraObject.AddComponent<SimpleCameraFollow>();
             follow.SetTarget(target);
+            follow.Configure(0.08f, new Vector2(-8f, -1.5f), new Vector2(16f, 5f));
         }
 
         private static void CreateDebugOverlay(PlayerController player)
@@ -157,7 +164,7 @@ namespace SidePortal.Level
         private void CreateBlock(string name, Vector2 position, Vector2 scale)
         {
             var block = new GameObject(name);
-            block.layer = PortalSurfaceLayer;
+            block.layer = SolidLayer;
             block.transform.position = position;
             block.transform.localScale = new Vector3(scale.x, scale.y, 1f);
 
@@ -166,6 +173,25 @@ namespace SidePortal.Level
 
             var collider = block.AddComponent<BoxCollider2D>();
             collider.size = Vector2.one;
+        }
+
+        private void CreateAnchor(string name, Vector2 position, Vector2 normal, bool allowPrimary, bool allowSecondary)
+        {
+            var anchor = new GameObject(name);
+            anchor.layer = PortalAnchorLayer;
+            anchor.transform.position = position;
+            anchor.transform.localScale = new Vector3(0.55f, 1.7f, 1f);
+
+            var renderer = anchor.AddComponent<SpriteRenderer>();
+            renderer.sprite = anchorSprite;
+            renderer.sortingOrder = 3;
+
+            var collider = anchor.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+            collider.size = Vector2.one;
+
+            var portalAnchor = anchor.AddComponent<PortalAnchor>();
+            portalAnchor.Configure(normal, allowPrimary, allowSecondary);
         }
 
         private void CreateExit(LevelCompleteOverlay completeOverlay)

@@ -11,7 +11,7 @@ namespace SidePortal.EditorTools
 {
     public static class VerticalSliceContentBuilder
     {
-        private const int PortalSurfaceLayer = 6;
+        private const int PortalAnchorLayer = 6;
         private const int SolidLayer = 7;
         private const int PortalLayer = 8;
         private const int PlayerLayer = 9;
@@ -32,6 +32,7 @@ namespace SidePortal.EditorTools
             var primarySprite = CreateSpriteAsset("Assets/Art/Greybox/portal_primary.png", new Color32(66, 180, 255, 255));
             var secondarySprite = CreateSpriteAsset("Assets/Art/Greybox/portal_secondary.png", new Color32(255, 142, 45, 255));
             var exitSprite = CreateSpriteAsset("Assets/Art/Greybox/exit.png", new Color32(104, 225, 119, 255));
+            var anchorSprite = CreateSpriteAsset("Assets/Art/Greybox/portal_anchor.png", new Color32(160, 220, 255, 115));
 
             var primaryPortal = CreatePortalPrefab(PrimaryPortalPrefabPath, primarySprite, true);
             var secondaryPortal = CreatePortalPrefab(SecondaryPortalPrefabPath, secondarySprite, false);
@@ -39,7 +40,7 @@ namespace SidePortal.EditorTools
             var exitPrefab = CreateExitPrefab(exitSprite);
             var playerPrefab = CreatePlayerPrefab(playerSprite, primaryPortal, secondaryPortal);
 
-            CreateTutorialScene(playerPrefab, blockPrefab, exitPrefab);
+            CreateTutorialScene(playerPrefab, blockPrefab, exitPrefab, anchorSprite);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }
@@ -118,7 +119,7 @@ namespace SidePortal.EditorTools
         private static GameObject CreateBlockPrefab(Sprite sprite)
         {
             var root = new GameObject("GreyboxBlock");
-            root.layer = PortalSurfaceLayer;
+            root.layer = SolidLayer;
             var renderer = root.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
             var collider = root.AddComponent<BoxCollider2D>();
@@ -154,7 +155,7 @@ namespace SidePortal.EditorTools
             var root = new GameObject("Player");
             root.tag = "Player";
             root.layer = PlayerLayer;
-            root.transform.localScale = new Vector3(0.75f, 1.4f, 1f);
+            root.transform.localScale = new Vector3(0.85f, 1.55f, 1f);
 
             var renderer = root.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
@@ -177,11 +178,11 @@ namespace SidePortal.EditorTools
 
             var controller = root.AddComponent<PlayerController>();
             SetPrivate(controller, "groundCheck", groundCheck.transform);
-            SetPrivate(controller, "groundMask", (LayerMask)((1 << PortalSurfaceLayer) | (1 << SolidLayer)));
+            SetPrivate(controller, "groundMask", (LayerMask)(1 << SolidLayer));
 
             var validator = root.AddComponent<PortalPlacementValidator>();
-            SetPrivate(validator, "portalSurfaceMask", (LayerMask)(1 << PortalSurfaceLayer));
-            SetPrivate(validator, "placementBlockingMask", (LayerMask)((1 << PortalSurfaceLayer) | (1 << SolidLayer)));
+            SetPrivate(validator, "portalAnchorMask", (LayerMask)(1 << PortalAnchorLayer));
+            SetPrivate(validator, "placementBlockingMask", (LayerMask)(1 << SolidLayer));
             SetPrivate(validator, "portalOverlapMask", (LayerMask)(1 << PortalLayer));
             SetPrivate(validator, "drawDebug", true);
 
@@ -196,7 +197,7 @@ namespace SidePortal.EditorTools
             return prefab;
         }
 
-        private static void CreateTutorialScene(GameObject playerPrefab, GameObject blockPrefab, GameObject exitPrefab)
+        private static void CreateTutorialScene(GameObject playerPrefab, GameObject blockPrefab, GameObject exitPrefab, Sprite anchorSprite)
         {
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
             scene.name = "Level_01_Tutorial";
@@ -212,11 +213,12 @@ namespace SidePortal.EditorTools
             cameraObject.tag = "MainCamera";
             var camera = cameraObject.AddComponent<Camera>();
             camera.orthographic = true;
-            camera.orthographicSize = 5f;
+            camera.orthographicSize = 4.15f;
             camera.backgroundColor = new Color(0.08f, 0.09f, 0.1f);
             cameraObject.transform.position = new Vector3(1f, 1f, -10f);
             var follow = cameraObject.AddComponent<SimpleCameraFollow>();
             follow.SetTarget(player.transform);
+            follow.Configure(0.08f, new Vector2(-8f, -1.5f), new Vector2(16f, 5f));
 
             var debugObject = new GameObject("PortalDebugOverlay");
             var overlay = debugObject.AddComponent<PortalDebugOverlay>();
@@ -237,6 +239,9 @@ namespace SidePortal.EditorTools
             CreateBlock(blockPrefab, "ExitBackWall", new Vector2(16.5f, 0f), new Vector2(0.8f, 5f));
             CreateBlock(blockPrefab, "Ceiling", new Vector2(4f, 5f), new Vector2(24f, 1f));
             CreateBlock(blockPrefab, "HighMomentumDrop", new Vector2(-6f, 2.6f), new Vector2(2.5f, 0.6f));
+            CreateAnchor("StartAnchor", anchorSprite, new Vector2(-8.02f, -0.55f), Vector2.right);
+            CreateAnchor("ExitAnchor", anchorSprite, new Vector2(16.02f, -0.55f), Vector2.left);
+            CreateAnchor("CeilingAnchor", anchorSprite, new Vector2(-6f, 2.22f), Vector2.down);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[]
@@ -251,6 +256,25 @@ namespace SidePortal.EditorTools
             block.name = name;
             block.transform.position = position;
             block.transform.localScale = new Vector3(scale.x, scale.y, 1f);
+        }
+
+        private static void CreateAnchor(string name, Sprite sprite, Vector2 position, Vector2 normal)
+        {
+            var anchorObject = new GameObject(name);
+            anchorObject.layer = PortalAnchorLayer;
+            anchorObject.transform.position = position;
+            anchorObject.transform.localScale = new Vector3(0.55f, 1.7f, 1f);
+
+            var renderer = anchorObject.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
+            renderer.sortingOrder = 3;
+
+            var collider = anchorObject.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+            collider.size = Vector2.one;
+
+            var anchor = anchorObject.AddComponent<PortalAnchor>();
+            anchor.Configure(normal, true, true);
         }
 
         private static GameObject SavePrefab(GameObject root, string path)

@@ -17,6 +17,13 @@ namespace SidePortal.Level
             target = newTarget;
         }
 
+        public void Configure(float followSmoothTime, Vector2 minimumBounds, Vector2 maximumBounds)
+        {
+            smoothTime = followSmoothTime;
+            minBounds = minimumBounds;
+            maxBounds = maximumBounds;
+        }
+
         private void LateUpdate()
         {
             if (target == null)

@@ -1,4 +1,3 @@
-using SidePortal.Core;
 using SidePortal.Player;
 using UnityEngine;
 
@@ -37,12 +36,12 @@ namespace SidePortal.Portals
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Q) || Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0))
             {
                 Fire(true);
             }
 
-            if (Input.GetKeyDown(KeyCode.E) || Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButtonDown(1))
             {
                 Fire(false);
             }
@@ -59,8 +58,8 @@ namespace SidePortal.Portals
             }
 
             var origin = fireOrigin != null ? (Vector2)fireOrigin.position : (Vector2)transform.position;
-            var aim = player != null ? player.AimDirection : AimDirection.Default;
-            var result = placementValidator.TryFindPlacement(origin, aim);
+            var aim = MouseAimDirection(origin);
+            var result = placementValidator.TryFindPlacement(origin, aim, primary);
 
             if (!result.Success)
             {
@@ -69,6 +68,29 @@ namespace SidePortal.Portals
 
             PlacePortal(primary, result.Position, result.Normal);
             return true;
+        }
+
+        public Vector2 CurrentMouseAimDirection
+        {
+            get
+            {
+                var origin = fireOrigin != null ? (Vector2)fireOrigin.position : (Vector2)transform.position;
+                return MouseAimDirection(origin);
+            }
+        }
+
+        private static Vector2 MouseAimDirection(Vector2 origin)
+        {
+            var camera = Camera.main;
+            if (camera == null)
+            {
+                return Vector2.right;
+            }
+
+            var mouse = Input.mousePosition;
+            var mouseWorld = camera.ScreenToWorldPoint(new Vector3(mouse.x, mouse.y, -camera.transform.position.z));
+            var direction = (Vector2)mouseWorld - origin;
+            return direction.sqrMagnitude < 0.01f ? Vector2.right : direction.normalized;
         }
 
         private void PlacePortal(bool placePrimary, Vector2 position, Vector2 normal)

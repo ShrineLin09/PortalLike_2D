@@ -6,6 +6,7 @@
 - `Player`: requires `Rigidbody2D`, `Collider2D`, `PlayerController`, and `PortalGun`.
 - `PortalGun`: assign primary and secondary portal prefabs, a fire origin transform, and layer masks.
 - `Portal`: prefab root should have a trigger `Collider2D`. The component uses its local `right` direction as the exit normal.
+- `PortalAnchor`: fixed valid placement point. Mouse shots must hit one of these anchors to create a portal.
 - `VerticalSliceRuntimeBootstrap`: used by `Level_01_Tutorial` to generate the first playable greybox scene at runtime.
 
 ## First Playable Scene
@@ -17,23 +18,25 @@ Open `Assets/Scenes/Level_01_Tutorial.unity` and press Play. The scene creates t
 - Exit floor and back wall on the right.
 - A green exit trigger that shows completion text.
 - Runtime-created portal templates assigned to the player portal gun.
+- Semi-transparent portal anchors on the start wall, exit wall, and a ceiling test point.
 
 ## Portal Placement Contract
 
-The prototype allows wall placement from four aim directions, but placement is still rejected when:
+The prototype looks like free mouse shooting, but portal placement only succeeds when the ray hits a valid `PortalAnchor`. Placement is rejected when:
 
-- The ray misses a portal surface.
-- The surface normal does not oppose the aim direction closely enough.
+- The ray misses all portal anchors.
+- The hit anchor is disabled.
+- The hit anchor does not allow the requested portal type.
 - The candidate portal space overlaps blocking geometry.
 - The candidate portal overlaps another portal.
 - The exit clearance area is obstructed.
 
-This is the minimum needed to support "any wall" placement without accepting obviously unsafe corner and thin-wall placements.
+This keeps level design controllable while still letting the player aim freely with the mouse.
 
 ## Recommended Layers
 
 - `Solid`: walls, floors, ceilings, door bodies.
-- `PortalSurface`: surfaces that may receive portals. In the first prototype this can be the same physical wall tilemap layer if the mask is configured accordingly.
+- `PortalAnchor`: fixed anchor points that may receive portals.
 - `Portal`: portal trigger colliders.
 - `Player`: player body.
 - `PuzzleObject`: weighted boxes and other moving puzzle objects.

@@ -5,8 +5,9 @@ namespace SidePortal.Portals
     public enum PortalPlacementFailure
     {
         None,
-        NoSurfaceHit,
-        SurfaceFacingWrongWay,
+        NoValidAnchorHit,
+        AnchorDisabled,
+        PortalTypeNotAllowed,
         BlockedPortalSpace,
         OverlappingPortal,
         BlockedExitClearance
@@ -20,7 +21,8 @@ namespace SidePortal.Portals
             Vector2 normal,
             Vector2 hitPoint,
             PortalPlacementFailure failure,
-            string message)
+            string message,
+            string anchorName = "")
         {
             Success = success;
             Position = position;
@@ -28,6 +30,7 @@ namespace SidePortal.Portals
             HitPoint = hitPoint;
             Failure = failure;
             Message = message;
+            AnchorName = anchorName;
         }
 
         public bool Success { get; }
@@ -36,6 +39,7 @@ namespace SidePortal.Portals
         public Vector2 HitPoint { get; }
         public PortalPlacementFailure Failure { get; }
         public string Message { get; }
+        public string AnchorName { get; }
 
         public static PortalPlacementResult Failed(PortalPlacementFailure failure, string message)
         {

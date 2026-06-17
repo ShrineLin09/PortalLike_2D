@@ -7,7 +7,7 @@ namespace SidePortal.Tests.EditMode
 {
     public sealed class PortalPlacementValidatorTests
     {
-        private const int SurfaceLayer = 6;
+        private const int AnchorLayer = 6;
         private const int BlockingLayer = 7;
         private const int PortalLayer = 8;
 
@@ -20,8 +20,9 @@ namespace SidePortal.Tests.EditMode
             validatorObject = new GameObject("validator");
             validator = validatorObject.AddComponent<PortalPlacementValidator>();
 
-            SetMask("portalSurfaceMask", 1 << SurfaceLayer);
-            SetMask("placementBlockingMask", (1 << SurfaceLayer) | (1 << BlockingLayer));
+            Physics2D.queriesHitTriggers = true;
+            SetMask("portalAnchorMask", 1 << AnchorLayer);
+            SetMask("placementBlockingMask", 1 << BlockingLayer);
             SetMask("portalOverlapMask", 1 << PortalLayer);
         }
 
@@ -38,30 +39,42 @@ namespace SidePortal.Tests.EditMode
         [Test]
         public void TryFindPlacement_Fails_WhenRayMissesSurface()
         {
-            var result = validator.TryFindPlacement(Vector2.zero, Vector2.right);
+            var result = validator.TryFindPlacement(Vector2.zero, Vector2.right, true);
 
             Assert.That(result.Success, Is.False);
-            Assert.That(result.Failure, Is.EqualTo(PortalPlacementFailure.NoSurfaceHit));
+            Assert.That(result.Failure, Is.EqualTo(PortalPlacementFailure.NoValidAnchorHit));
         }
 
         [Test]
-        public void TryFindPlacement_Accepts_ClearAxisAlignedWall()
+        public void TryFindPlacement_Accepts_ClearAnchor()
         {
-            CreateBox("surface", new Vector2(4f, 0f), new Vector2(0.5f, 4f), SurfaceLayer);
+            CreateAnchor("anchor", new Vector2(4f, 0f), Vector2.left, true, true);
 
-            var result = validator.TryFindPlacement(Vector2.zero, Vector2.right);
+            var result = validator.TryFindPlacement(Vector2.zero, Vector2.right, true);
 
             Assert.That(result.Success, Is.True);
             Assert.That(result.Normal, Is.EqualTo(Vector2.left));
+            Assert.That(result.AnchorName, Is.EqualTo("anchor"));
+        }
+
+        [Test]
+        public void TryFindPlacement_Fails_WhenPortalTypeIsNotAllowed()
+        {
+            CreateAnchor("yellow only", new Vector2(4f, 0f), Vector2.left, false, true);
+
+            var result = validator.TryFindPlacement(Vector2.zero, Vector2.right, true);
+
+            Assert.That(result.Success, Is.False);
+            Assert.That(result.Failure, Is.EqualTo(PortalPlacementFailure.PortalTypeNotAllowed));
         }
 
         [Test]
         public void TryFindPlacement_Fails_WhenPortalOverlapsExistingPortal()
         {
-            CreateBox("surface", new Vector2(4f, 0f), new Vector2(0.5f, 4f), SurfaceLayer);
-            CreateBox("existing portal", new Vector2(3.67f, 0f), new Vector2(0.18f, 2.1f), PortalLayer);
+            CreateAnchor("anchor", new Vector2(4f, 0f), Vector2.left, true, true);
+            CreateBox("existing portal", new Vector2(3.92f, 0f), new Vector2(0.18f, 2.1f), PortalLayer);
 
-            var result = validator.TryFindPlacement(Vector2.zero, Vector2.right);
+            var result = validator.TryFindPlacement(Vector2.zero, Vector2.right, true);
 
             Assert.That(result.Success, Is.False);
             Assert.That(result.Failure, Is.EqualTo(PortalPlacementFailure.OverlappingPortal));
@@ -74,6 +87,18 @@ namespace SidePortal.Tests.EditMode
             obj.transform.position = position;
             var collider = obj.AddComponent<BoxCollider2D>();
             collider.size = size;
+        }
+
+        private static void CreateAnchor(string name, Vector2 position, Vector2 normal, bool allowPrimary, bool allowSecondary)
+        {
+            var obj = new GameObject(name);
+            obj.layer = AnchorLayer;
+            obj.transform.position = position;
+            var collider = obj.AddComponent<BoxCollider2D>();
+            collider.isTrigger = true;
+            collider.size = new Vector2(0.5f, 1.5f);
+            var anchor = obj.AddComponent<PortalAnchor>();
+            anchor.Configure(normal, allowPrimary, allowSecondary);
         }
 
         private void SetMask(string fieldName, int value)
