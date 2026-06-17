@@ -1,4 +1,3 @@
-using SidePortal.Core;
 using UnityEngine;
 
 namespace SidePortal.Player
@@ -13,7 +12,7 @@ namespace SidePortal.Player
         [SerializeField] private LayerMask groundMask;
 
         private Rigidbody2D body;
-        private Vector2 aimDirection = AimDirection.Default;
+        private Vector2 aimDirection = global::SidePortal.Core.AimDirection.Default;
         private bool jumpQueued;
 
         public Vector2 AimDirection => aimDirection;
@@ -26,7 +25,7 @@ namespace SidePortal.Player
 
         private void Update()
         {
-            aimDirection = AimDirection.FromInput(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), aimDirection);
+            aimDirection = global::SidePortal.Core.AimDirection.FromInput(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), aimDirection);
 
             if (Input.GetButtonDown("Jump") || Input.GetKeyDown(KeyCode.Space))
             {
