@@ -44,7 +44,7 @@ namespace SidePortal.Configuration
         {
             ExitOffset = 1.1f,
             TeleportCooldown = 0.22f,
-            MinExitSpeed = 4f,
+            MinExitSpeed = 0f,
             ExitClearancePadding = 0.2f,
             MaxExitSpeed = 36f,
             MaxDownwardExitSpeed = 36f
@@ -76,6 +76,9 @@ namespace SidePortal.Configuration
         public float CellSize;
         public float PlayerHeight;
         public float PlayerWidth;
+        public float PortalThickness;
+        public float PortalLongAxis;
+        public float PortalAnchorThickness;
         public float StandardJumpHeight;
         public float StandardJumpDistance;
         public float MaximumSafeDrop;
@@ -84,8 +87,11 @@ namespace SidePortal.Configuration
         public static LevelDesignScale Default => new LevelDesignScale
         {
             CellSize = 1f,
-            PlayerHeight = 1.55f,
-            PlayerWidth = 0.85f,
+            PlayerHeight = 2f,
+            PlayerWidth = 1f,
+            PortalThickness = 0.18f,
+            PortalLongAxis = 2f,
+            PortalAnchorThickness = 0.45f,
             StandardJumpHeight = 2.4f,
             StandardJumpDistance = 4.5f,
             MaximumSafeDrop = 6f,
@@ -120,11 +126,39 @@ namespace SidePortal.Configuration
             var defaults = PortalMomentumConfig.Default;
             if (config.ExitOffset <= 0f) config.ExitOffset = defaults.ExitOffset;
             if (config.TeleportCooldown <= 0f) config.TeleportCooldown = defaults.TeleportCooldown;
-            if (config.MinExitSpeed <= 0f) config.MinExitSpeed = defaults.MinExitSpeed;
+            if (config.MinExitSpeed < 0f) config.MinExitSpeed = defaults.MinExitSpeed;
             if (config.ExitClearancePadding <= 0f) config.ExitClearancePadding = defaults.ExitClearancePadding;
             if (config.MaxExitSpeed <= 0f) config.MaxExitSpeed = defaults.MaxExitSpeed;
             if (config.MaxDownwardExitSpeed <= 0f) config.MaxDownwardExitSpeed = defaults.MaxDownwardExitSpeed;
             return config;
+        }
+
+        public static LevelDesignScale EnsureLevelDesignScale(LevelDesignScale config)
+        {
+            var defaults = LevelDesignScale.Default;
+            if (config.CellSize <= 0f) config.CellSize = defaults.CellSize;
+            if (config.PlayerHeight <= 0f) config.PlayerHeight = defaults.PlayerHeight;
+            if (config.PlayerWidth <= 0f) config.PlayerWidth = defaults.PlayerWidth;
+            if (config.PortalThickness <= 0f) config.PortalThickness = defaults.PortalThickness;
+            if (config.PortalLongAxis <= 0f) config.PortalLongAxis = defaults.PortalLongAxis;
+            if (config.PortalAnchorThickness <= 0f) config.PortalAnchorThickness = defaults.PortalAnchorThickness;
+            if (config.StandardJumpHeight <= 0f) config.StandardJumpHeight = defaults.StandardJumpHeight;
+            if (config.StandardJumpDistance <= 0f) config.StandardJumpDistance = defaults.StandardJumpDistance;
+            if (config.MaximumSafeDrop <= 0f) config.MaximumSafeDrop = defaults.MaximumSafeDrop;
+            if (config.BaselineMomentumGap <= 0f) config.BaselineMomentumGap = defaults.BaselineMomentumGap;
+            return config;
+        }
+
+        public static Vector2 PortalPlacementSize => new Vector2(LevelDesignScale.PortalThickness, LevelDesignScale.PortalLongAxis);
+        public static Vector2 PlayerClearanceSize => new Vector2(LevelDesignScale.PlayerWidth, LevelDesignScale.PlayerHeight);
+        public static Vector3 PortalScale => new Vector3(LevelDesignScale.PortalThickness, LevelDesignScale.PortalLongAxis, 1f);
+
+        public static Vector3 PortalAnchorScale(bool verticalSurface, float cellSize)
+        {
+            var scale = LevelDesignScale;
+            return verticalSurface
+                ? new Vector3(scale.PortalAnchorThickness * cellSize, scale.PortalLongAxis * cellSize, 1f)
+                : new Vector3(scale.PortalLongAxis * cellSize, scale.PortalAnchorThickness * cellSize, 1f);
         }
 
         public static CameraViewConfig EnsureCameraView(CameraViewConfig config)

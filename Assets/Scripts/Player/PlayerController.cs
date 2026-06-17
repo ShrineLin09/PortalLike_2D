@@ -23,6 +23,7 @@ namespace SidePortal.Player
         public void ConfigurePhysics(PlayerPhysicsConfig config)
         {
             physics = PrototypeTuning.EnsurePlayerPhysics(config);
+            ApplyDefaultScale();
         }
 
         public void ConfigureGroundCheck(Transform check, LayerMask mask)
@@ -45,13 +46,26 @@ namespace SidePortal.Player
         private void Awake()
         {
             physics = PrototypeTuning.EnsurePlayerPhysics(physics);
+            ApplyDefaultScale();
             body = GetComponent<Rigidbody2D>();
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
+        }
+
+        private void OnEnable()
+        {
+            ApplyDefaultScale();
         }
 
         private void OnValidate()
         {
             physics = PrototypeTuning.EnsurePlayerPhysics(physics);
+            ApplyDefaultScale();
+        }
+
+        private void Reset()
+        {
+            physics = PrototypeTuning.PlayerPhysics;
+            ApplyDefaultScale();
         }
 
         private void Update()
@@ -77,7 +91,7 @@ namespace SidePortal.Player
             coyoteCounter = IsGrounded ? physics.CoyoteTime : coyoteCounter - Time.fixedDeltaTime;
 
             var velocity = body.velocity;
-            velocity.x = Input.GetAxisRaw("Horizontal") * physics.MoveSpeed;
+            velocity.x = ResolveHorizontalVelocity(velocity.x, Input.GetAxisRaw("Horizontal"), physics.MoveSpeed);
 
             if (jumpBufferCounter > 0f && coyoteCounter > 0f)
             {
@@ -102,6 +116,23 @@ namespace SidePortal.Player
             jumpCutQueued = false;
         }
 
+        public static float ResolveHorizontalVelocity(float currentVelocityX, float rawInput, float moveSpeed)
+        {
+            var input = Mathf.Clamp(rawInput, -1f, 1f);
+            var targetWalkVelocity = input * moveSpeed;
+            var currentSpeed = Mathf.Abs(currentVelocityX);
+
+            if (currentSpeed > moveSpeed)
+            {
+                if (Mathf.Approximately(input, 0f) || Mathf.Sign(input) == Mathf.Sign(currentVelocityX))
+                {
+                    return currentVelocityX;
+                }
+            }
+
+            return targetWalkVelocity;
+        }
+
         private bool CheckGrounded()
         {
             if (groundCheck == null)
@@ -121,6 +152,12 @@ namespace SidePortal.Player
 
             temporaryMaxFallSpeed = 0f;
             return physics.MaxFallSpeed;
+        }
+
+        private void ApplyDefaultScale()
+        {
+            var scale = PrototypeTuning.LevelDesignScale;
+            transform.localScale = new Vector3(scale.PlayerWidth, scale.PlayerHeight, 1f);
         }
 
         private void OnDrawGizmosSelected()

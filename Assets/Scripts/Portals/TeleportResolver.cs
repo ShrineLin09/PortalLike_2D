@@ -44,6 +44,11 @@ namespace SidePortal.Portals
             return remapped;
         }
 
+        public static Vector2 RemapPlayerVelocity(Vector2 velocity, Vector2 entryExitNormal, Vector2 exitNormal)
+        {
+            return RemapVelocity(velocity, entryExitNormal, exitNormal, 0f);
+        }
+
         public static Vector2 ExitPosition(Vector2 exitPortalPosition, Vector2 exitNormal, float exitOffset)
         {
             return exitPortalPosition + exitNormal.normalized * exitOffset;

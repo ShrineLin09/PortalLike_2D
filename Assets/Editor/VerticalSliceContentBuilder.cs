@@ -96,7 +96,7 @@ namespace SidePortal.EditorTools
         {
             var root = new GameObject(primary ? "PortalPrimary" : "PortalSecondary");
             root.layer = PortalLayer;
-            root.transform.localScale = new Vector3(0.18f, 2.1f, 1f);
+            root.transform.localScale = PrototypeTuning.PortalScale;
 
             var renderer = root.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
@@ -266,7 +266,9 @@ namespace SidePortal.EditorTools
             var anchorObject = new GameObject(name);
             anchorObject.layer = PortalAnchorLayer;
             anchorObject.transform.position = position;
-            anchorObject.transform.localScale = new Vector3(0.55f, 1.7f, 1f);
+            anchorObject.transform.localScale = Mathf.Abs(normal.x) > 0.5f
+                ? PrototypeTuning.PortalAnchorScale(true, 1f)
+                : PrototypeTuning.PortalAnchorScale(false, 1f);
 
             var renderer = anchorObject.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;

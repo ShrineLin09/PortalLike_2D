@@ -122,7 +122,7 @@ namespace SidePortal.GridLevel
             var portalObject = CreateChild(name);
             portalObject.SetActive(false);
             portalObject.layer = PortalLayer;
-            portalObject.transform.localScale = new Vector3(0.18f, 2.1f, 1f);
+            portalObject.transform.localScale = PrototypeTuning.PortalScale;
 
             var renderer = portalObject.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
@@ -293,9 +293,7 @@ namespace SidePortal.GridLevel
 
         private static Vector3 AnchorScale(GridEdge edge, float cellSize)
         {
-            return edge == GridEdge.Left || edge == GridEdge.Right
-                ? new Vector3(0.45f * cellSize, 1.5f * cellSize, 1f)
-                : new Vector3(1.5f * cellSize, 0.45f * cellSize, 1f);
+            return PrototypeTuning.PortalAnchorScale(edge == GridEdge.Left || edge == GridEdge.Right, cellSize);
         }
     }
 }

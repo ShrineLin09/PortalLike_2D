@@ -1,3 +1,4 @@
+using SidePortal.Configuration;
 using UnityEngine;
 
 namespace SidePortal.Portals
@@ -7,8 +8,8 @@ namespace SidePortal.Portals
         [SerializeField] private LayerMask portalAnchorMask;
         [SerializeField] private LayerMask placementBlockingMask;
         [SerializeField] private LayerMask portalOverlapMask;
-        [SerializeField] private Vector2 portalSize = new Vector2(0.18f, 2.1f);
-        [SerializeField] private Vector2 exitClearanceSize = new Vector2(0.85f, 1.8f);
+        [SerializeField] private Vector2 portalSize = PrototypeTuning.PortalPlacementSize;
+        [SerializeField] private Vector2 exitClearanceSize = PrototypeTuning.PlayerClearanceSize;
         [SerializeField] private float maxPlaceDistance = 16f;
         [SerializeField] private float surfaceOffset = 0.08f;
         [SerializeField] private bool drawDebug;
@@ -21,6 +22,17 @@ namespace SidePortal.Portals
             portalAnchorMask = anchorMask;
             placementBlockingMask = blockingMask;
             portalOverlapMask = overlapMask;
+            ApplyDefaultGeometry();
+        }
+
+        private void Awake()
+        {
+            ApplyDefaultGeometry();
+        }
+
+        private void OnValidate()
+        {
+            ApplyDefaultGeometry();
         }
 
         public void SetExternalFailure(string message)
@@ -102,7 +114,7 @@ namespace SidePortal.Portals
             }
 
             var exitPosition = position + normal * (exitClearanceSize.x * 0.5f + surfaceOffset);
-            if (HasBlockingOverlap(exitPosition, exitClearanceSize, angle, placementBlockingMask, null))
+            if (HasBlockingOverlap(exitPosition, exitClearanceSize, 0f, placementBlockingMask, null))
             {
                 return Store(new PortalPlacementResult(
                     false,
@@ -121,6 +133,12 @@ namespace SidePortal.Portals
         {
             LastResult = result;
             return result;
+        }
+
+        private void ApplyDefaultGeometry()
+        {
+            portalSize = PrototypeTuning.PortalPlacementSize;
+            exitClearanceSize = PrototypeTuning.PlayerClearanceSize;
         }
 
         private static float NormalToAngle(Vector2 normal)

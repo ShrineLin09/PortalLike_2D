@@ -58,16 +58,24 @@ namespace SidePortal.Portals
         public void ConfigureMomentum(PortalMomentumConfig config)
         {
             momentum = PrototypeTuning.EnsurePortalMomentum(config);
+            ApplyDefaultGeometry();
         }
 
         private void Awake()
         {
             momentum = PrototypeTuning.EnsurePortalMomentum(momentum);
+            ApplyDefaultGeometry();
+        }
+
+        private void OnEnable()
+        {
+            ApplyDefaultGeometry();
         }
 
         private void OnValidate()
         {
             momentum = PrototypeTuning.EnsurePortalMomentum(momentum);
+            ApplyDefaultGeometry();
         }
 
         private void Reset()
@@ -107,13 +115,16 @@ namespace SidePortal.Portals
             var safeExitOffset = Mathf.Max(momentum.ExitOffset, GetBodyExtentAlongNormal(body, linkedExitNormal) + momentum.ExitClearancePadding);
             var exitPosition = TeleportResolver.ExitPosition(linkedPortal.transform.position, linkedExitNormal, safeExitOffset);
             var entryVelocity = body.velocity;
-            var exitVelocity = TeleportResolver.RemapVelocity(entryVelocity, ExitNormal, linkedExitNormal, momentum.MinExitSpeed);
+            var isPlayer = body.TryGetComponent<SidePortal.Player.PlayerController>(out var player);
+            var exitVelocity = isPlayer
+                ? TeleportResolver.RemapPlayerVelocity(entryVelocity, ExitNormal, linkedExitNormal)
+                : TeleportResolver.RemapVelocity(entryVelocity, ExitNormal, linkedExitNormal, momentum.MinExitSpeed);
             var clamp = TeleportResolver.ClampExitVelocityDetailed(exitVelocity, momentum.MaxExitSpeed, momentum.MaxDownwardExitSpeed);
             exitVelocity = clamp.Velocity;
 
             body.position = exitPosition;
             body.velocity = exitVelocity;
-            if (body.TryGetComponent<SidePortal.Player.PlayerController>(out var player))
+            if (isPlayer)
             {
                 player.AllowTemporaryFallSpeed(momentum.MaxExitSpeed, momentum.TeleportCooldown + 1f);
             }
@@ -136,6 +147,16 @@ namespace SidePortal.Portals
             normal.Normalize();
             var extents = bodyCollider.bounds.extents;
             return Mathf.Abs(normal.x) * extents.x + Mathf.Abs(normal.y) * extents.y;
+        }
+
+        private void ApplyDefaultGeometry()
+        {
+            transform.localScale = PrototypeTuning.PortalScale;
+            if (TryGetComponent<BoxCollider2D>(out var box))
+            {
+                box.isTrigger = true;
+                box.size = Vector2.one;
+            }
         }
     }
 }

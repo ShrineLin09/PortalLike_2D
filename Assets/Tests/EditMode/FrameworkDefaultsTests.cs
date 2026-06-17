@@ -32,7 +32,7 @@ namespace SidePortal.Tests.EditMode
 
             Assert.That(momentum.ExitOffset, Is.EqualTo(1.1f));
             Assert.That(momentum.TeleportCooldown, Is.EqualTo(0.22f));
-            Assert.That(momentum.MinExitSpeed, Is.EqualTo(4f));
+            Assert.That(momentum.MinExitSpeed, Is.EqualTo(0f));
             Assert.That(momentum.ExitClearancePadding, Is.EqualTo(0.2f));
             Assert.That(momentum.MaxExitSpeed, Is.EqualTo(36f));
             Assert.That(momentum.MaxDownwardExitSpeed, Is.EqualTo(36f));
@@ -56,12 +56,23 @@ namespace SidePortal.Tests.EditMode
             var scale = PrototypeTuning.LevelDesignScale;
 
             Assert.That(scale.CellSize, Is.EqualTo(1f));
-            Assert.That(scale.PlayerHeight, Is.EqualTo(1.55f));
-            Assert.That(scale.PlayerWidth, Is.EqualTo(0.85f));
+            Assert.That(scale.PlayerHeight, Is.EqualTo(2f));
+            Assert.That(scale.PlayerWidth, Is.EqualTo(1f));
+            Assert.That(scale.PortalThickness, Is.EqualTo(0.18f));
+            Assert.That(scale.PortalLongAxis, Is.EqualTo(2f));
+            Assert.That(scale.PortalAnchorThickness, Is.EqualTo(0.45f));
             Assert.That(scale.StandardJumpHeight, Is.EqualTo(2.4f));
             Assert.That(scale.StandardJumpDistance, Is.EqualTo(4.5f));
             Assert.That(scale.MaximumSafeDrop, Is.EqualTo(6f));
             Assert.That(scale.BaselineMomentumGap, Is.EqualTo(8f));
+        }
+
+        [Test]
+        public void PortalAndPlayerSizes_MatchTwoCellBaseline()
+        {
+            Assert.That(PrototypeTuning.PlayerClearanceSize, Is.EqualTo(new Vector2(1f, 2f)));
+            Assert.That(PrototypeTuning.PortalPlacementSize, Is.EqualTo(new Vector2(0.18f, 2f)));
+            Assert.That(PrototypeTuning.PortalScale, Is.EqualTo(new Vector3(0.18f, 2f, 1f)));
         }
 
         [Test]
@@ -70,6 +81,7 @@ namespace SidePortal.Tests.EditMode
             var playerObject = new GameObject("PlayerDefaults");
             var portalObject = new GameObject("PortalDefaults");
             var cameraObject = new GameObject("CameraDefaults");
+            var anchorObject = new GameObject("AnchorDefaults");
 
             try
             {
@@ -78,16 +90,25 @@ namespace SidePortal.Tests.EditMode
                 portalObject.AddComponent<BoxCollider2D>();
                 var portal = portalObject.AddComponent<Portal>();
                 var follow = cameraObject.AddComponent<SimpleCameraFollow>();
+                anchorObject.AddComponent<BoxCollider2D>();
+                var anchor = anchorObject.AddComponent<PortalAnchor>();
+                player.ConfigurePhysics(PrototypeTuning.PlayerPhysics);
+                portal.ConfigureMomentum(PrototypeTuning.PortalMomentum);
+                anchor.Configure(Vector2.right, true, true);
 
                 Assert.That(player.Physics.MoveSpeed, Is.EqualTo(PrototypeTuning.PlayerPhysics.MoveSpeed));
+                Assert.That(playerObject.transform.localScale, Is.EqualTo(new Vector3(1f, 2f, 1f)));
                 Assert.That(portal.Momentum.MaxDownwardExitSpeed, Is.EqualTo(PrototypeTuning.PortalMomentum.MaxDownwardExitSpeed));
+                Assert.That(portalObject.transform.localScale, Is.EqualTo(PrototypeTuning.PortalScale));
                 Assert.That(follow.View.OrthographicSize, Is.EqualTo(PrototypeTuning.CameraView.OrthographicSize));
+                Assert.That(anchorObject.transform.localScale, Is.EqualTo(PrototypeTuning.PortalAnchorScale(true, 1f)));
             }
             finally
             {
                 Object.DestroyImmediate(playerObject);
                 Object.DestroyImmediate(portalObject);
                 Object.DestroyImmediate(cameraObject);
+                Object.DestroyImmediate(anchorObject);
             }
         }
     }

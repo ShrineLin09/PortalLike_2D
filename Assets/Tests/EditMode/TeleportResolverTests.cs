@@ -25,6 +25,22 @@ namespace SidePortal.Tests.EditMode
         }
 
         [Test]
+        public void RemapPlayerVelocity_DoesNotAddSpeedAtWalkSpeed()
+        {
+            var result = TeleportResolver.RemapPlayerVelocity(Vector2.right * 8f, Vector2.left, Vector2.up);
+
+            Assert.That(result.magnitude, Is.EqualTo(8f).Within(0.001f));
+        }
+
+        [Test]
+        public void RemapPlayerVelocity_DoesNotNudgeLowSpeedPlayer()
+        {
+            var result = TeleportResolver.RemapPlayerVelocity(Vector2.right * 0.2f, Vector2.left, Vector2.up);
+
+            Assert.That(result.magnitude, Is.EqualTo(0.2f).Within(0.001f));
+        }
+
+        [Test]
         public void RemapVelocity_ConvertsDownwardEntryThroughFloorToWallExit()
         {
             var result = TeleportResolver.RemapVelocity(Vector2.down * 28f, Vector2.up, Vector2.right, 4f);

@@ -82,7 +82,7 @@ namespace SidePortal.Level
             var portalObject = new GameObject(name);
             portalObject.SetActive(false);
             portalObject.layer = PortalLayer;
-            portalObject.transform.localScale = new Vector3(0.18f, 2.1f, 1f);
+            portalObject.transform.localScale = PrototypeTuning.PortalScale;
 
             var renderer = portalObject.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
@@ -186,7 +186,9 @@ namespace SidePortal.Level
             var anchor = new GameObject(name);
             anchor.layer = PortalAnchorLayer;
             anchor.transform.position = position;
-            anchor.transform.localScale = new Vector3(0.55f, 1.7f, 1f);
+            anchor.transform.localScale = Mathf.Abs(normal.x) > 0.5f
+                ? PrototypeTuning.PortalAnchorScale(true, 1f)
+                : PrototypeTuning.PortalAnchorScale(false, 1f);
 
             var renderer = anchor.AddComponent<SpriteRenderer>();
             renderer.sprite = anchorSprite;

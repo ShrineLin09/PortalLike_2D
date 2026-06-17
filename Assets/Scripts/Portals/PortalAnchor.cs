@@ -1,3 +1,4 @@
+using SidePortal.Configuration;
 using UnityEngine;
 
 namespace SidePortal.Portals
@@ -24,6 +25,7 @@ namespace SidePortal.Portals
             allowSecondary = secondaryAllowed;
             isEnabled = enabledAnchor;
             portalMount = transform;
+            ApplyDefaultGeometry();
         }
 
         public bool AllowsPortalType(bool primary)
@@ -35,13 +37,41 @@ namespace SidePortal.Portals
         {
             var trigger = GetComponent<Collider2D>();
             trigger.isTrigger = true;
+            ApplyDefaultGeometry();
+        }
+
+        private void Awake()
+        {
+            ApplyDefaultGeometry();
+        }
+
+        private void OnEnable()
+        {
+            ApplyDefaultGeometry();
+        }
+
+        private void OnValidate()
+        {
+            ApplyDefaultGeometry();
         }
 
         private void OnDrawGizmos()
         {
             Gizmos.color = isEnabled ? new Color(0f, 0.8f, 1f, 0.65f) : new Color(0.5f, 0.5f, 0.5f, 0.35f);
-            Gizmos.DrawWireCube(PortalMount.position, new Vector3(0.5f, 1.6f, 0.1f));
+            var verticalSurface = Mathf.Abs(Normal.x) > 0.5f;
+            Gizmos.DrawWireCube(PortalMount.position, PrototypeTuning.PortalAnchorScale(verticalSurface, 1f));
             Gizmos.DrawRay(PortalMount.position, Normal);
+        }
+
+        private void ApplyDefaultGeometry()
+        {
+            var verticalSurface = Mathf.Abs(Normal.x) > 0.5f;
+            transform.localScale = PrototypeTuning.PortalAnchorScale(verticalSurface, 1f);
+            if (TryGetComponent<BoxCollider2D>(out var box))
+            {
+                box.isTrigger = true;
+                box.size = Vector2.one;
+            }
         }
     }
 }

@@ -72,7 +72,7 @@ namespace SidePortal.Tests.EditMode
         public void TryFindPlacement_Fails_WhenPortalOverlapsExistingPortal()
         {
             CreateAnchor("anchor", new Vector2(4f, 0f), Vector2.left, true, true);
-            CreateBox("existing portal", new Vector2(3.92f, 0f), new Vector2(0.18f, 2.1f), PortalLayer);
+            CreateBox("existing portal", new Vector2(3.92f, 0f), new Vector2(0.18f, 2f), PortalLayer);
 
             var result = validator.TryFindPlacement(Vector2.zero, Vector2.right, true);
 
@@ -96,7 +96,7 @@ namespace SidePortal.Tests.EditMode
             obj.transform.position = position;
             var collider = obj.AddComponent<BoxCollider2D>();
             collider.isTrigger = true;
-            collider.size = new Vector2(0.5f, 1.5f);
+            collider.size = new Vector2(0.45f, 2f);
             var anchor = obj.AddComponent<PortalAnchor>();
             anchor.Configure(normal, allowPrimary, allowSecondary);
         }
