@@ -1,0 +1,21 @@
+{
+  "name": "SidePortal.Tests.EditMode",
+  "rootNamespace": "SidePortal.Tests.EditMode",
+  "references": [
+    "SidePortal.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ],
+  "noEngineReferences": false
+}
