@@ -41,5 +41,10 @@ namespace SidePortal.Portals
         {
             return new PortalPlacementResult(false, Vector2.zero, Vector2.zero, Vector2.zero, failure, message);
         }
+
+        public static PortalPlacementResult FailedAt(Vector2 position, Vector2 normal, PortalPlacementFailure failure, string message)
+        {
+            return new PortalPlacementResult(false, position, normal, position, failure, message);
+        }
     }
 }

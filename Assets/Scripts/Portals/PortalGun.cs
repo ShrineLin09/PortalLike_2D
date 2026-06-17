@@ -18,6 +18,14 @@ namespace SidePortal.Portals
 
         public PortalPlacementResult LastPlacementResult => placementValidator.LastResult;
 
+        public void Configure(Transform origin, PlayerController controller, Portal primaryPrefab, Portal secondaryPrefab)
+        {
+            fireOrigin = origin;
+            player = controller;
+            primaryPortalPrefab = primaryPrefab;
+            secondaryPortalPrefab = secondaryPrefab;
+        }
+
         private void Awake()
         {
             placementValidator = GetComponent<PortalPlacementValidator>();
@@ -42,6 +50,14 @@ namespace SidePortal.Portals
 
         public bool Fire(bool primary)
         {
+            if ((primary && primaryPortalPrefab == null) || (!primary && secondaryPortalPrefab == null))
+            {
+                placementValidator.SetExternalFailure(primary
+                    ? "Primary portal prefab is not assigned."
+                    : "Secondary portal prefab is not assigned.");
+                return false;
+            }
+
             var origin = fireOrigin != null ? (Vector2)fireOrigin.position : (Vector2)transform.position;
             var aim = player != null ? player.AimDirection : AimDirection.Default;
             var result = placementValidator.TryFindPlacement(origin, aim);
@@ -77,6 +93,7 @@ namespace SidePortal.Portals
         {
             var portal = existing != null ? existing : Instantiate(prefab);
             portal.Configure(isPrimary, null, position, normal);
+            portal.gameObject.SetActive(true);
             return portal;
         }
     }

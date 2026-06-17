@@ -18,6 +18,12 @@ namespace SidePortal.Player
         public Vector2 AimDirection => aimDirection;
         public bool IsGrounded { get; private set; }
 
+        public void ConfigureGroundCheck(Transform check, LayerMask mask)
+        {
+            groundCheck = check;
+            groundMask = mask;
+        }
+
         private void Awake()
         {
             body = GetComponent<Rigidbody2D>();

@@ -6,6 +6,17 @@
 - `Player`: requires `Rigidbody2D`, `Collider2D`, `PlayerController`, and `PortalGun`.
 - `PortalGun`: assign primary and secondary portal prefabs, a fire origin transform, and layer masks.
 - `Portal`: prefab root should have a trigger `Collider2D`. The component uses its local `right` direction as the exit normal.
+- `VerticalSliceRuntimeBootstrap`: used by `Level_01_Tutorial` to generate the first playable greybox scene at runtime.
+
+## First Playable Scene
+
+Open `Assets/Scenes/Level_01_Tutorial.unity` and press Play. The scene creates the first test room automatically:
+
+- Start floor and back wall on the left.
+- A wide pit that cannot be crossed by a normal jump.
+- Exit floor and back wall on the right.
+- A green exit trigger that shows completion text.
+- Runtime-created portal templates assigned to the player portal gun.
 
 ## Portal Placement Contract
 

@@ -23,14 +23,25 @@ Unity 2D PC prototype scaffold for a side-scrolling puzzle platformer built arou
 ## Unity Setup
 
 1. Open this folder in Unity as a 2D project, or copy `Assets/` into an existing Unity 2D project.
-2. Create scenes for the vertical slice under `Assets/Scenes`.
-3. Add a `Player` GameObject with `Rigidbody2D`, `Collider2D`, `PlayerController`, and `PortalGun`.
-4. Add two portal prefabs with `Collider2D` set to trigger and the `Portal` component.
-5. Configure `PortalGun` masks:
+2. Open `Assets/Scenes/Level_01_Tutorial.unity`.
+3. Press Play. The scene contains a runtime bootstrap object that creates the greybox player, portal templates, camera, level geometry, exit, and debug overlay.
+4. Optional: when Unity licensing/editor execution is healthy, run `SidePortal > Build Playable Vertical Slice` to generate prefab-based scene assets from the editor tool.
+5. Configure `PortalGun` masks if you build custom scenes:
    - `Portal Surface Mask`: layers that can receive portals.
    - `Placement Blocking Mask`: solid geometry and puzzle objects that must block portal placement.
    - `Portal Overlap Mask`: portal layer, used to reject overlapping portals.
 6. See `Documentation/PrototypeSetup.md` for scene and level design details.
+
+## First Playable Slice
+
+`Level_01_Tutorial` is currently a runtime-generated greybox scene because local Unity batchmode execution was blocked by the licensing client. The gameplay content is still versioned in code and the scene is included in Build Settings.
+
+Expected first-room solution:
+
+1. Aim left and fire one portal onto the start back wall.
+2. Aim right and fire the other portal onto the far exit wall.
+3. Walk into the start-side portal to cross the wide pit.
+4. Touch the green exit marker to complete the level.
 
 ## MVP Level Plan
 

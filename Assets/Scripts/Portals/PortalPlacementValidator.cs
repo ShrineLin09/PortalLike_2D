@@ -17,6 +17,18 @@ namespace SidePortal.Portals
         public PortalPlacementResult LastResult { get; private set; } =
             PortalPlacementResult.Failed(PortalPlacementFailure.NoSurfaceHit, "No placement attempted.");
 
+        public void ConfigureMasks(LayerMask surfaceMask, LayerMask blockingMask, LayerMask overlapMask)
+        {
+            portalSurfaceMask = surfaceMask;
+            placementBlockingMask = blockingMask;
+            portalOverlapMask = overlapMask;
+        }
+
+        public void SetExternalFailure(string message)
+        {
+            LastResult = PortalPlacementResult.Failed(PortalPlacementFailure.NoSurfaceHit, message);
+        }
+
         public PortalPlacementResult TryFindPlacement(Vector2 origin, Vector2 aimDirection)
         {
             var aim = aimDirection.sqrMagnitude < 0.01f ? Vector2.right : aimDirection.normalized;

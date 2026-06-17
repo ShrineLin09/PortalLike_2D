@@ -10,6 +10,12 @@ namespace SidePortal.Debugging
         [SerializeField] private PortalGun portalGun;
         [SerializeField] private bool visible = true;
 
+        public void Configure(PlayerController targetPlayer, PortalGun targetPortalGun)
+        {
+            player = targetPlayer;
+            portalGun = targetPortalGun;
+        }
+
         private void OnGUI()
         {
             if (!visible)
