@@ -27,11 +27,12 @@
 2. 打开 `Assets/Scenes/Level_01_Tutorial.unity`。
 3. 按 Play。场景会读取 `Assets/Data/Levels/Level_01_Tutorial.asset`，生成灰盒玩家、传送门模板、摄像机、关卡几何、通关点和调试面板。
 4. 使用菜单 `SidePortal > 网格关卡编辑器` 编辑块式关卡数据。
-5. 如果你自建场景，需要配置 `PortalGun` 的遮罩：
+5. 编辑完成后，在编辑器窗口点击 `应用到当前场景`。如果场景已经绑定该关卡数据，也可以点击 `刷新当前场景预览`。
+6. 如果你自建场景，需要配置 `PortalGun` 的遮罩：
    - `Portal Anchor Mask`：可生成传送门的固定锚点层。
    - `Placement Blocking Mask`：会阻挡传送门放置的实体层。
    - `Portal Overlap Mask`：传送门层，用于拒绝门与门重叠。
-6. 更多关卡搭建说明见 `Documentation/PrototypeSetup.md`。
+7. 更多关卡搭建说明见 `Documentation/PrototypeSetup.md`。
 
 ## 第一关测试路径
 

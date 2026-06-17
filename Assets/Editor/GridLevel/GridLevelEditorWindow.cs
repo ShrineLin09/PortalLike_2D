@@ -1,6 +1,7 @@
 using System.IO;
 using SidePortal.GridLevel;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 
 namespace SidePortal.EditorTools
@@ -113,6 +114,19 @@ namespace SidePortal.EditorTools
                 Record("移除失效传送门边缘");
                 levelData.RemoveInvalidPortalEdges();
                 Save();
+            }
+
+            using (new EditorGUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("应用到当前场景"))
+                {
+                    ApplyToCurrentScene();
+                }
+
+                if (GUILayout.Button("刷新当前场景预览"))
+                {
+                    RebuildMatchingSceneBuilders();
+                }
             }
         }
 
@@ -365,6 +379,50 @@ namespace SidePortal.EditorTools
             status = $"已创建：{path}";
         }
 
+        private void ApplyToCurrentScene()
+        {
+            var bootstrap = FindObjectOfType<GridLevelSceneBootstrap>();
+            if (bootstrap == null)
+            {
+                var root = new GameObject("网格关卡入口");
+                bootstrap = root.AddComponent<GridLevelSceneBootstrap>();
+            }
+
+            Undo.RecordObject(bootstrap, "应用关卡数据到当前场景");
+            bootstrap.Configure(levelData, true);
+
+            var builder = bootstrap.GetComponent<GridLevelBuilder>();
+            if (builder == null)
+            {
+                builder = bootstrap.gameObject.AddComponent<GridLevelBuilder>();
+            }
+
+            Undo.RecordObject(builder, "应用关卡数据到当前场景");
+            builder.Configure(levelData, false);
+            builder.Build(levelData);
+
+            EditorSceneManager.MarkSceneDirty(bootstrap.gameObject.scene);
+            status = "已应用到当前场景。按 Play 会使用当前关卡数据生成游戏内容。";
+        }
+
+        private void RebuildMatchingSceneBuilders()
+        {
+            var rebuilt = 0;
+            foreach (var builder in FindObjectsOfType<GridLevelBuilder>())
+            {
+                if (builder.LevelData != levelData)
+                {
+                    continue;
+                }
+
+                builder.Build(levelData);
+                EditorSceneManager.MarkSceneDirty(builder.gameObject.scene);
+                rebuilt++;
+            }
+
+            status = rebuilt > 0 ? $"已刷新 {rebuilt} 个当前场景预览。" : "当前场景没有引用该关卡数据的生成器。";
+        }
+
         private static void EnsureFolder(string path)
         {
             if (string.IsNullOrEmpty(path) || AssetDatabase.IsValidFolder(path))
@@ -387,6 +445,7 @@ namespace SidePortal.EditorTools
         {
             EditorUtility.SetDirty(levelData);
             AssetDatabase.SaveAssets();
+            RebuildMatchingSceneBuilders();
             Repaint();
         }
 
@@ -414,7 +473,8 @@ namespace SidePortal.EditorTools
         {
             var x = Mathf.FloorToInt((mouse.x - rect.x) / cellSize);
             var yFromTop = Mathf.FloorToInt((mouse.y - rect.y) / cellSize);
-            return new Vector2Int(x, Mathf.Max(0, Mathf.FloorToInt((rect.height - 1f) / cellSize) - yFromTop));
+            var height = Mathf.Max(1, Mathf.RoundToInt((rect.height - 1f) / cellSize));
+            return new Vector2Int(x, Mathf.Clamp(height - 1 - yFromTop, 0, height - 1));
         }
 
         private Rect CellRect(Rect rect, float cellSize, Vector2Int cell)

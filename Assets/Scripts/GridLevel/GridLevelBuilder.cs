@@ -25,6 +25,14 @@ namespace SidePortal.GridLevel
         private Sprite exitSprite;
         private Sprite anchorSprite;
 
+        public GridLevelData LevelData => levelData;
+
+        public void Configure(GridLevelData data, bool shouldBuildOnAwake)
+        {
+            levelData = data;
+            buildOnAwake = shouldBuildOnAwake;
+        }
+
         private void Awake()
         {
             if (buildOnAwake && levelData != null)

@@ -8,6 +8,12 @@ namespace SidePortal.GridLevel
         [SerializeField] private GridLevelData levelData;
         [SerializeField] private bool buildOnAwake = true;
 
+        public void Configure(GridLevelData data, bool shouldBuildOnAwake)
+        {
+            levelData = data;
+            buildOnAwake = shouldBuildOnAwake;
+        }
+
         private void Awake()
         {
             if (!buildOnAwake)
