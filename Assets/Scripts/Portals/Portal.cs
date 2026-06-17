@@ -3,6 +3,25 @@ using UnityEngine;
 
 namespace SidePortal.Portals
 {
+    public readonly struct PortalTeleportDebugInfo
+    {
+        public PortalTeleportDebugInfo(Vector2 entryVelocity, Vector2 exitVelocity, VelocityClampType clampType, Vector2 entryNormal, Vector2 exitNormal)
+        {
+            EntryVelocity = entryVelocity;
+            ExitVelocity = exitVelocity;
+            ClampType = clampType;
+            EntryNormal = entryNormal;
+            ExitNormal = exitNormal;
+        }
+
+        public Vector2 EntryVelocity { get; }
+        public Vector2 ExitVelocity { get; }
+        public VelocityClampType ClampType { get; }
+        public Vector2 EntryNormal { get; }
+        public Vector2 ExitNormal { get; }
+        public bool WasClamped => ClampType != VelocityClampType.None;
+    }
+
     [RequireComponent(typeof(Collider2D))]
     public sealed class Portal : MonoBehaviour
     {
@@ -12,6 +31,7 @@ namespace SidePortal.Portals
 
         private float lastTeleportTime = -999f;
 
+        public static PortalTeleportDebugInfo LastTeleportDebug { get; private set; }
         public bool IsPrimary => primary;
         public PortalMomentumConfig Momentum => momentum;
         public Portal LinkedPortal
@@ -28,6 +48,11 @@ namespace SidePortal.Portals
             linkedPortal = link;
             transform.position = position;
             transform.right = normal;
+        }
+
+        public void ResetTeleportCooldown()
+        {
+            lastTeleportTime = -999f;
         }
 
         public void ConfigureMomentum(PortalMomentumConfig config)
@@ -53,6 +78,16 @@ namespace SidePortal.Portals
 
         private void OnTriggerEnter2D(Collider2D other)
         {
+            TryTeleport(other);
+        }
+
+        private void OnTriggerStay2D(Collider2D other)
+        {
+            TryTeleport(other);
+        }
+
+        private void TryTeleport(Collider2D other)
+        {
             if (linkedPortal == null || Time.time < lastTeleportTime + momentum.TeleportCooldown)
             {
                 return;
@@ -71,14 +106,22 @@ namespace SidePortal.Portals
             var linkedExitNormal = (Vector2)linkedPortal.ExitNormal;
             var safeExitOffset = Mathf.Max(momentum.ExitOffset, GetBodyExtentAlongNormal(body, linkedExitNormal) + momentum.ExitClearancePadding);
             var exitPosition = TeleportResolver.ExitPosition(linkedPortal.transform.position, linkedExitNormal, safeExitOffset);
-            var exitVelocity = TeleportResolver.RemapVelocity(body.velocity, ExitNormal, linkedExitNormal, momentum.MinExitSpeed);
-            exitVelocity = TeleportResolver.ClampExitVelocity(exitVelocity, momentum.MaxExitSpeed, momentum.MaxDownwardExitSpeed);
+            var entryVelocity = body.velocity;
+            var exitVelocity = TeleportResolver.RemapVelocity(entryVelocity, ExitNormal, linkedExitNormal, momentum.MinExitSpeed);
+            var clamp = TeleportResolver.ClampExitVelocityDetailed(exitVelocity, momentum.MaxExitSpeed, momentum.MaxDownwardExitSpeed);
+            exitVelocity = clamp.Velocity;
 
             body.position = exitPosition;
             body.velocity = exitVelocity;
+            if (body.TryGetComponent<SidePortal.Player.PlayerController>(out var player))
+            {
+                player.AllowTemporaryFallSpeed(momentum.MaxExitSpeed, momentum.TeleportCooldown + 1f);
+            }
+
             body.WakeUp();
             Physics2D.SyncTransforms();
 
+            LastTeleportDebug = new PortalTeleportDebugInfo(entryVelocity, exitVelocity, clamp.ClampType, ExitNormal, linkedExitNormal);
             lastTeleportTime = Time.time;
             linkedPortal.lastTeleportTime = Time.time;
         }

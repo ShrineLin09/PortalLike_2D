@@ -2,6 +2,27 @@ using UnityEngine;
 
 namespace SidePortal.Portals
 {
+    public enum VelocityClampType
+    {
+        None,
+        MaxExitSpeed,
+        MaxDownwardExitSpeed,
+        MaxExitSpeedAndDownwardExitSpeed
+    }
+
+    public readonly struct VelocityClampResult
+    {
+        public VelocityClampResult(Vector2 velocity, VelocityClampType clampType)
+        {
+            Velocity = velocity;
+            ClampType = clampType;
+        }
+
+        public Vector2 Velocity { get; }
+        public VelocityClampType ClampType { get; }
+        public bool WasClamped => ClampType != VelocityClampType.None;
+    }
+
     public static class TeleportResolver
     {
         public static Vector2 RemapVelocity(Vector2 velocity, Vector2 entryExitNormal, Vector2 exitNormal, float minExitSpeed)
@@ -30,17 +51,35 @@ namespace SidePortal.Portals
 
         public static Vector2 ClampExitVelocity(Vector2 velocity, float maxExitSpeed, float maxDownwardExitSpeed)
         {
+            return ClampExitVelocityDetailed(velocity, maxExitSpeed, maxDownwardExitSpeed).Velocity;
+        }
+
+        public static VelocityClampResult ClampExitVelocityDetailed(Vector2 velocity, float maxExitSpeed, float maxDownwardExitSpeed)
+        {
+            var clampedByMaxSpeed = false;
+            var clampedByDownwardSpeed = false;
+
             if (maxExitSpeed > 0f && velocity.magnitude > maxExitSpeed)
             {
                 velocity = velocity.normalized * maxExitSpeed;
+                clampedByMaxSpeed = true;
             }
 
             if (maxDownwardExitSpeed > 0f && velocity.y < -maxDownwardExitSpeed)
             {
                 velocity.y = -maxDownwardExitSpeed;
+                clampedByDownwardSpeed = true;
             }
 
-            return velocity;
+            var clampType = (clampedByMaxSpeed, clampedByDownwardSpeed) switch
+            {
+                (true, true) => VelocityClampType.MaxExitSpeedAndDownwardExitSpeed,
+                (true, false) => VelocityClampType.MaxExitSpeed,
+                (false, true) => VelocityClampType.MaxDownwardExitSpeed,
+                _ => VelocityClampType.None
+            };
+
+            return new VelocityClampResult(velocity, clampType);
         }
 
         private static Vector2 Perpendicular(Vector2 value)

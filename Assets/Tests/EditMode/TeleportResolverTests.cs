@@ -25,6 +25,24 @@ namespace SidePortal.Tests.EditMode
         }
 
         [Test]
+        public void RemapVelocity_ConvertsDownwardEntryThroughFloorToWallExit()
+        {
+            var result = TeleportResolver.RemapVelocity(Vector2.down * 28f, Vector2.up, Vector2.right, 4f);
+
+            Assert.That(result.x, Is.EqualTo(28f).Within(0.001f));
+            Assert.That(result.y, Is.EqualTo(0f).Within(0.001f));
+            Assert.That(result.magnitude, Is.EqualTo(28f).Within(0.001f));
+        }
+
+        [Test]
+        public void RemapVelocity_DoesNotDowngradeHighSpeedToMinimumExitSpeed()
+        {
+            var result = TeleportResolver.RemapVelocity(Vector2.down * 28f, Vector2.up, Vector2.right, 4f);
+
+            Assert.That(result.magnitude, Is.EqualTo(28f).Within(0.001f));
+        }
+
+        [Test]
         public void ClampExitVelocity_LimitsOverallSpeed()
         {
             var result = TeleportResolver.ClampExitVelocity(Vector2.right * 30f, 12f, 0f);
@@ -45,10 +63,11 @@ namespace SidePortal.Tests.EditMode
         public void ClampExitVelocity_UsesPortalMomentumDefaults()
         {
             var momentum = PrototypeTuning.PortalMomentum;
-            var result = TeleportResolver.ClampExitVelocity(new Vector2(24f, -24f), momentum.MaxExitSpeed, momentum.MaxDownwardExitSpeed);
+            var result = TeleportResolver.ClampExitVelocityDetailed(new Vector2(24f, -24f), momentum.MaxExitSpeed, momentum.MaxDownwardExitSpeed);
 
-            Assert.That(result.magnitude, Is.LessThanOrEqualTo(momentum.MaxExitSpeed + 0.001f));
-            Assert.That(result.y, Is.GreaterThanOrEqualTo(-momentum.MaxDownwardExitSpeed - 0.001f));
+            Assert.That(result.WasClamped, Is.False);
+            Assert.That(result.Velocity.magnitude, Is.GreaterThan(30f));
+            Assert.That(result.Velocity.y, Is.GreaterThanOrEqualTo(-momentum.MaxDownwardExitSpeed - 0.001f));
         }
     }
 }

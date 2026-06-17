@@ -14,6 +14,8 @@ namespace SidePortal.Player
         private float jumpBufferCounter;
         private float coyoteCounter;
         private bool jumpCutQueued;
+        private float temporaryMaxFallSpeed;
+        private float temporaryMaxFallSpeedUntil;
 
         public bool IsGrounded { get; private set; }
         public PlayerPhysicsConfig Physics => physics;
@@ -27,6 +29,17 @@ namespace SidePortal.Player
         {
             groundCheck = check;
             groundMask = mask;
+        }
+
+        public void AllowTemporaryFallSpeed(float maxSpeed, float duration)
+        {
+            if (maxSpeed <= physics.MaxFallSpeed || duration <= 0f)
+            {
+                return;
+            }
+
+            temporaryMaxFallSpeed = Mathf.Max(temporaryMaxFallSpeed, maxSpeed);
+            temporaryMaxFallSpeedUntil = Mathf.Max(temporaryMaxFallSpeedUntil, Time.time + duration);
         }
 
         private void Awake()
@@ -79,9 +92,10 @@ namespace SidePortal.Player
             }
 
             body.gravityScale = velocity.y > 0f ? physics.RisingGravityScale : physics.FallingGravityScale;
-            if (velocity.y < -physics.MaxFallSpeed)
+            var fallSpeedLimit = CurrentMaxFallSpeed();
+            if (velocity.y < -fallSpeedLimit)
             {
-                velocity.y = -physics.MaxFallSpeed;
+                velocity.y = -fallSpeedLimit;
             }
 
             body.velocity = velocity;
@@ -96,6 +110,17 @@ namespace SidePortal.Player
             }
 
             return Physics2D.OverlapBox(groundCheck.position, physics.GroundCheckSize, 0f, groundMask) != null;
+        }
+
+        private float CurrentMaxFallSpeed()
+        {
+            if (Time.time <= temporaryMaxFallSpeedUntil)
+            {
+                return Mathf.Max(physics.MaxFallSpeed, temporaryMaxFallSpeed);
+            }
+
+            temporaryMaxFallSpeed = 0f;
+            return physics.MaxFallSpeed;
         }
 
         private void OnDrawGizmosSelected()

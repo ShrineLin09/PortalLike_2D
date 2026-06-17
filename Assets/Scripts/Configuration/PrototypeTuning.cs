@@ -46,8 +46,8 @@ namespace SidePortal.Configuration
             TeleportCooldown = 0.22f,
             MinExitSpeed = 4f,
             ExitClearancePadding = 0.2f,
-            MaxExitSpeed = 16f,
-            MaxDownwardExitSpeed = 10f
+            MaxExitSpeed = 36f,
+            MaxDownwardExitSpeed = 36f
         };
     }
 

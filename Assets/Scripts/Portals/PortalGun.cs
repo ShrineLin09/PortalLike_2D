@@ -108,6 +108,8 @@ namespace SidePortal.Portals
             {
                 primaryPortal.LinkedPortal = secondaryPortal;
                 secondaryPortal.LinkedPortal = primaryPortal;
+                primaryPortal.ResetTeleportCooldown();
+                secondaryPortal.ResetTeleportCooldown();
             }
         }
 

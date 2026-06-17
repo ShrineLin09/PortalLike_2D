@@ -34,8 +34,8 @@ namespace SidePortal.Tests.EditMode
             Assert.That(momentum.TeleportCooldown, Is.EqualTo(0.22f));
             Assert.That(momentum.MinExitSpeed, Is.EqualTo(4f));
             Assert.That(momentum.ExitClearancePadding, Is.EqualTo(0.2f));
-            Assert.That(momentum.MaxExitSpeed, Is.EqualTo(16f));
-            Assert.That(momentum.MaxDownwardExitSpeed, Is.EqualTo(10f));
+            Assert.That(momentum.MaxExitSpeed, Is.EqualTo(36f));
+            Assert.That(momentum.MaxDownwardExitSpeed, Is.EqualTo(36f));
         }
 
         [Test]
