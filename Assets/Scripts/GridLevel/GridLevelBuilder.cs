@@ -151,6 +151,7 @@ namespace SidePortal.GridLevel
             var body = playerObject.AddComponent<Rigidbody2D>();
             body.freezeRotation = true;
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
 
             var collider = playerObject.AddComponent<BoxCollider2D>();
             collider.size = Vector2.one;

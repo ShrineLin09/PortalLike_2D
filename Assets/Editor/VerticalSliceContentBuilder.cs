@@ -167,6 +167,7 @@ namespace SidePortal.EditorTools
             var body = root.AddComponent<Rigidbody2D>();
             body.freezeRotation = true;
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
 
             var collider = root.AddComponent<BoxCollider2D>();
             collider.size = Vector2.one;

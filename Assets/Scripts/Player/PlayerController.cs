@@ -33,6 +33,7 @@ namespace SidePortal.Player
         private void Awake()
         {
             body = GetComponent<Rigidbody2D>();
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
         }
 
         private void Update()
