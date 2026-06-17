@@ -110,6 +110,9 @@ namespace SidePortal.EditorTools
             SetPrivate(portal, "exitOffset", 1.1f);
             SetPrivate(portal, "teleportCooldown", 0.22f);
             SetPrivate(portal, "minExitSpeed", 4f);
+            SetPrivate(portal, "exitClearancePadding", 0.2f);
+            SetPrivate(portal, "maxExitSpeed", 16f);
+            SetPrivate(portal, "maxDownwardExitSpeed", 10f);
 
             var prefab = SavePrefab(root, path).GetComponent<Portal>();
             Object.DestroyImmediate(root);

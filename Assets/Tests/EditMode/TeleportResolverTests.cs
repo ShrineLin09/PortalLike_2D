@@ -22,5 +22,22 @@ namespace SidePortal.Tests.EditMode
 
             Assert.That(result, Is.EqualTo(Vector2.right * 3f));
         }
+
+        [Test]
+        public void ClampExitVelocity_LimitsOverallSpeed()
+        {
+            var result = TeleportResolver.ClampExitVelocity(Vector2.right * 30f, 12f, 0f);
+
+            Assert.That(result.magnitude, Is.EqualTo(12f).Within(0.001f));
+        }
+
+        [Test]
+        public void ClampExitVelocity_LimitsDownwardSpeed()
+        {
+            var result = TeleportResolver.ClampExitVelocity(new Vector2(2f, -18f), 0f, 10f);
+
+            Assert.That(result.x, Is.EqualTo(2f).Within(0.001f));
+            Assert.That(result.y, Is.EqualTo(-10f).Within(0.001f));
+        }
     }
 }

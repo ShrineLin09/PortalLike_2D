@@ -28,6 +28,21 @@ namespace SidePortal.Portals
             return exitPortalPosition + exitNormal.normalized * exitOffset;
         }
 
+        public static Vector2 ClampExitVelocity(Vector2 velocity, float maxExitSpeed, float maxDownwardExitSpeed)
+        {
+            if (maxExitSpeed > 0f && velocity.magnitude > maxExitSpeed)
+            {
+                velocity = velocity.normalized * maxExitSpeed;
+            }
+
+            if (maxDownwardExitSpeed > 0f && velocity.y < -maxDownwardExitSpeed)
+            {
+                velocity.y = -maxDownwardExitSpeed;
+            }
+
+            return velocity;
+        }
+
         private static Vector2 Perpendicular(Vector2 value)
         {
             return new Vector2(-value.y, value.x);
