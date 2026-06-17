@@ -23,7 +23,7 @@ namespace SidePortal.EditorTools
         private const string LevelExitPrefabPath = "Assets/Prefabs/LevelExit.prefab";
         private const string BlockPrefabPath = "Assets/Prefabs/Greybox/GreyboxBlock.prefab";
 
-        [MenuItem("SidePortal/Build Playable Vertical Slice")]
+        [MenuItem("SidePortal/生成旧版可玩竖切")]
         public static void BuildPlayableVerticalSlice()
         {
             CreateFolders();

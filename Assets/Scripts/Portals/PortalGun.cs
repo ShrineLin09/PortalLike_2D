@@ -52,8 +52,8 @@ namespace SidePortal.Portals
             if ((primary && primaryPortalPrefab == null) || (!primary && secondaryPortalPrefab == null))
             {
                 placementValidator.SetExternalFailure(primary
-                    ? "Primary portal prefab is not assigned."
-                    : "Secondary portal prefab is not assigned.");
+                    ? "蓝门预制体未绑定。"
+                    : "黄门预制体未绑定。");
                 return false;
             }
 

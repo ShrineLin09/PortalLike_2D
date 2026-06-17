@@ -1,63 +1,63 @@
-# Prototype Setup Notes
+# 原型搭建说明
 
-## Core Scene Objects
+## 核心场景对象
 
-- `LevelManager`: one per scene. Handles `R` restart and level exit progression.
-- `Player`: requires `Rigidbody2D`, `Collider2D`, `PlayerController`, and `PortalGun`.
-- `PortalGun`: assign primary and secondary portal prefabs, a fire origin transform, and layer masks.
-- `Portal`: prefab root should have a trigger `Collider2D`. The component uses its local `right` direction as the exit normal.
-- `PortalAnchor`: fixed valid placement point. Mouse shots must hit one of these anchors to create a portal.
-- `GridLevelData`: ScriptableObject level source containing placed blocks, spawn, exit, and legal portal edges.
-- `GridLevelBuilder`: runtime builder that generates the playable greybox scene from `GridLevelData`.
-- `GridLevelSceneBootstrap`: scene entrypoint used by `Level_01_Tutorial`.
+- `LevelManager`：每个场景一个，处理 `R` 重开和关卡切换。
+- `Player`：需要 `Rigidbody2D`、`Collider2D`、`PlayerController` 和 `PortalGun`。
+- `PortalGun`：绑定蓝门/黄门预制体、发射点和图层遮罩。
+- `Portal`：预制体根物体需要 Trigger `Collider2D`，本地 `right` 方向就是出口法线。
+- `PortalAnchor`：固定传送门锚点。鼠标射线必须命中它，才能生成传送门。
+- `GridLevelData`：关卡数据资产，保存已放置块、出生点、通关点和合法传送门边缘。
+- `GridLevelBuilder`：运行时读取 `GridLevelData`，生成可玩的灰盒关卡。
+- `GridLevelSceneBootstrap`：`Level_01_Tutorial` 的场景入口。
 
-## First Playable Scene
+## 第一关场景
 
-Open `Assets/Scenes/Level_01_Tutorial.unity` and press Play. The scene reads `Assets/Data/Levels/Level_01_Tutorial.asset` and creates the first test room automatically:
+打开 `Assets/Scenes/Level_01_Tutorial.unity` 并按 Play。场景会读取 `Assets/Data/Levels/Level_01_Tutorial.asset`，自动生成第一间测试房：
 
-- Start floor and back wall on the left.
-- A wide pit that cannot be crossed by a normal jump.
-- Exit floor and back wall on the right.
-- A green exit trigger that shows completion text.
-- Runtime-created portal templates assigned to the player portal gun.
-- Semi-transparent portal anchors on the start wall, exit wall, and a ceiling test point.
+- 左侧起点地面和背墙。
+- 一个普通跳跃无法跨过的宽坑。
+- 右侧终点地面和背墙。
+- 绿色通关触发器，触发后显示完成文字。
+- 运行时创建的传送门模板，并绑定到玩家传送门枪。
+- 起点墙、终点墙和天花测试点上的半透明传送门锚点。
 
-## Grid Level Editor
+## 网格关卡编辑器
 
-Open `SidePortal > Grid Level Editor` to edit `GridLevelData` assets. The editor works with placed blocks, not individual cell painting:
+打开菜单 `SidePortal > 网格关卡编辑器` 编辑 `GridLevelData` 资产。编辑器操作的是“块”，不是逐格涂色：
 
-- Place solid or obstacle blocks using `1x1`, `2x1`, `1x2`, or `2x2` presets.
-- Delete blocks.
-- Set player spawn and exit cells.
-- Toggle portal markers on block edges.
+- 使用 `1x1`、`2x1`、`1x2`、`2x2` 预设放置道路/实体块或障碍块。
+- 删除块。
+- 设置玩家出生点和通关点。
+- 在块边缘切换传送门标记。
 
-Portal markers are rejected on edges that touch any other block. If a new block is placed against an existing marked edge, invalid portal markers are removed automatically.
+如果某条边和任何其他块紧贴，编辑器会拒绝在这条边设置传送门标记。新放置的块如果贴住已有传送门边缘，失效标记会被自动移除。
 
-## Portal Placement Contract
+## 传送门放置规则
 
-The prototype looks like free mouse shooting, but portal placement only succeeds when the ray hits a valid `PortalAnchor`. Placement is rejected when:
+原型看起来像自由鼠标射击，但只有射线命中合法 `PortalAnchor` 时才会放置传送门。以下情况会拒绝放置：
 
-- The ray misses all portal anchors.
-- The hit anchor is disabled.
-- The hit anchor does not allow the requested portal type.
-- The candidate portal space overlaps blocking geometry.
-- The candidate portal overlaps another portal.
-- The exit clearance area is obstructed.
+- 射线没有命中任何传送门锚点。
+- 命中的锚点已禁用。
+- 命中的锚点不允许当前门类型。
+- 候选传送门空间与阻挡物重叠。
+- 候选传送门与已有传送门重叠。
+- 出口空间被阻挡。
 
-This keeps level design controllable while still letting the player aim freely with the mouse.
+这样既保留鼠标自由瞄准，又能让关卡设计保持可控。
 
-## Recommended Layers
+## 推荐图层
 
-- `Solid`: walls, floors, ceilings, door bodies.
-- `PortalAnchor`: fixed anchor points that may receive portals.
-- `Portal`: portal trigger colliders.
-- `Player`: player body.
-- `PuzzleObject`: weighted boxes and other moving puzzle objects.
+- `Solid`：墙、地板、天花板、门体。
+- `PortalAnchor`：可接收传送门的固定锚点。
+- `Portal`：传送门触发器碰撞体。
+- `Player`：玩家身体。
+- `PuzzleObject`：重物箱等可互动机关物体。
 
-## Level Design Constraints
+## 关卡设计约束
 
-- Keep early rooms axis-aligned. Slopes are out of scope for the first vertical slice.
-- Give each portal placement surface at least one full portal height of clear space.
-- Avoid one-tile-thick walls unless both sides are intentionally reachable.
-- Add a visible restart path or rely on `R` while prototyping.
-- Validate each level with both intended play and obvious exploit attempts: ceiling skip, floor momentum skip, corner insertion, and overlapping portals.
+- 早期房间保持横平竖直，第一版不做斜坡。
+- 每个传送门锚点周围至少留出完整传送门高度。
+- 除非两侧都明确可达，否则避免一格厚墙。
+- 原型期可以依赖 `R` 重开。
+- 每关都要验证预期解法和明显破关方式：天花板跳关、动量跳关、角落卡门、传送门重叠。

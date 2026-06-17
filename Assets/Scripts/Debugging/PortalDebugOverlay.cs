@@ -24,24 +24,38 @@ namespace SidePortal.Debugging
             }
 
             GUILayout.BeginArea(new Rect(12f, 12f, 440f, 150f), GUI.skin.box);
-            GUILayout.Label("Portal Prototype Debug");
+            GUILayout.Label("传送门原型调试");
 
             if (player != null)
             {
-                GUILayout.Label($"Grounded: {player.IsGrounded}");
+                GUILayout.Label($"是否落地：{(player.IsGrounded ? "是" : "否")}");
             }
 
             if (portalGun != null)
             {
                 var result = portalGun.LastPlacementResult;
-                GUILayout.Label($"Mouse aim: {portalGun.CurrentMouseAimDirection}");
-                GUILayout.Label($"Last placement: {(result.Success ? "Accepted" : result.Failure.ToString())}");
-                GUILayout.Label($"Hit: {result.HitPoint} Normal: {result.Normal} Anchor: {result.AnchorName}");
+                GUILayout.Label($"鼠标瞄准方向：{portalGun.CurrentMouseAimDirection}");
+                GUILayout.Label($"上次放置结果：{(result.Success ? "已接受" : FailureName(result.Failure))}");
+                GUILayout.Label($"命中点：{result.HitPoint} 法线：{result.Normal} 锚点：{result.AnchorName}");
                 GUILayout.Label(result.Message);
             }
 
-            GUILayout.Label("Controls: A/D move, Space jump, LMB blue, RMB yellow, R restart");
+            GUILayout.Label("操作：A/D 移动，空格跳跃，左键蓝门，右键黄门，R 重开");
             GUILayout.EndArea();
+        }
+
+        private static string FailureName(PortalPlacementFailure failure)
+        {
+            return failure switch
+            {
+                PortalPlacementFailure.NoValidAnchorHit => "没有命中有效传送门锚点",
+                PortalPlacementFailure.AnchorDisabled => "锚点已禁用",
+                PortalPlacementFailure.PortalTypeNotAllowed => "锚点不允许该门类型",
+                PortalPlacementFailure.BlockedPortalSpace => "传送门空间被阻挡",
+                PortalPlacementFailure.OverlappingPortal => "与已有传送门重叠",
+                PortalPlacementFailure.BlockedExitClearance => "出口空间被阻挡",
+                _ => failure.ToString()
+            };
         }
     }
 }

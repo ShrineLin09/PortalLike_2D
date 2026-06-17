@@ -25,6 +25,24 @@ namespace SidePortal.EditorTools
             new Vector2Int(2, 2)
         };
 
+        private static readonly string[] ToolLabels =
+        {
+            "放置道路/实体块",
+            "放置障碍块",
+            "删除块",
+            "设置出生点",
+            "设置通关点",
+            "切换传送门边缘"
+        };
+
+        private static readonly string[] EdgeLabels =
+        {
+            "左边",
+            "右边",
+            "上边",
+            "下边"
+        };
+
         private GridLevelData levelData;
         private ToolMode toolMode;
         private int sizePresetIndex;
@@ -32,12 +50,12 @@ namespace SidePortal.EditorTools
         private bool allowPrimary = true;
         private bool allowSecondary = true;
         private Vector2 scroll;
-        private string status = "Select or create a GridLevelData asset.";
+        private string status = "请选择或新建一个关卡数据资产。";
 
-        [MenuItem("SidePortal/Grid Level Editor")]
+        [MenuItem("SidePortal/网格关卡编辑器")]
         public static void Open()
         {
-            GetWindow<GridLevelEditorWindow>("Grid Level Editor");
+            GetWindow<GridLevelEditorWindow>("网格关卡编辑器");
         }
 
         private void OnGUI()
@@ -63,12 +81,12 @@ namespace SidePortal.EditorTools
             using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
             {
                 levelData = (GridLevelData)EditorGUILayout.ObjectField(levelData, typeof(GridLevelData), false, GUILayout.MinWidth(240f));
-                if (GUILayout.Button("New", EditorStyles.toolbarButton, GUILayout.Width(52f)))
+                if (GUILayout.Button("新建", EditorStyles.toolbarButton, GUILayout.Width(52f)))
                 {
                     CreateLevelAsset();
                 }
 
-                if (levelData != null && GUILayout.Button("Ping", EditorStyles.toolbarButton, GUILayout.Width(52f)))
+                if (levelData != null && GUILayout.Button("定位", EditorStyles.toolbarButton, GUILayout.Width(52f)))
                 {
                     EditorGUIUtility.PingObject(levelData);
                 }
@@ -79,20 +97,20 @@ namespace SidePortal.EditorTools
         {
             using (new EditorGUILayout.HorizontalScope())
             {
-                toolMode = (ToolMode)EditorGUILayout.EnumPopup("Tool", toolMode);
-                sizePresetIndex = EditorGUILayout.Popup("Block Size", sizePresetIndex, new[] { "1x1", "2x1", "1x2", "2x2" });
+                toolMode = (ToolMode)EditorGUILayout.Popup("工具", (int)toolMode, ToolLabels);
+                sizePresetIndex = EditorGUILayout.Popup("块尺寸", sizePresetIndex, new[] { "1x1", "2x1", "1x2", "2x2" });
             }
 
             using (new EditorGUILayout.HorizontalScope())
             {
-                selectedEdge = (GridEdge)EditorGUILayout.EnumPopup("Portal Edge", selectedEdge);
-                allowPrimary = EditorGUILayout.ToggleLeft("Blue", allowPrimary, GUILayout.Width(70f));
-                allowSecondary = EditorGUILayout.ToggleLeft("Yellow", allowSecondary, GUILayout.Width(80f));
+                selectedEdge = (GridEdge)EditorGUILayout.Popup("传送门边", (int)selectedEdge, EdgeLabels);
+                allowPrimary = EditorGUILayout.ToggleLeft("允许蓝门", allowPrimary, GUILayout.Width(90f));
+                allowSecondary = EditorGUILayout.ToggleLeft("允许黄门", allowSecondary, GUILayout.Width(90f));
             }
 
-            if (GUILayout.Button("Remove Invalid Portal Edges"))
+            if (GUILayout.Button("移除失效传送门边缘"))
             {
-                Record("Remove invalid portal edges");
+                Record("移除失效传送门边缘");
                 levelData.RemoveInvalidPortalEdges();
                 Save();
             }
@@ -168,8 +186,8 @@ namespace SidePortal.EditorTools
 
         private void DrawMarkers(Rect rect, float cellSize)
         {
-            DrawCellMarker(rect, cellSize, levelData.PlayerSpawn, new Color(0.95f, 0.78f, 0.25f, 0.9f), "P");
-            DrawCellMarker(rect, cellSize, levelData.ExitCell, new Color(0.3f, 0.9f, 0.45f, 0.9f), "E");
+            DrawCellMarker(rect, cellSize, levelData.PlayerSpawn, new Color(0.95f, 0.78f, 0.25f, 0.9f), "生");
+            DrawCellMarker(rect, cellSize, levelData.ExitCell, new Color(0.3f, 0.9f, 0.45f, 0.9f), "终");
         }
 
         private void DrawCellMarker(Rect rect, float cellSize, Vector2Int cell, Color color, string label)
@@ -227,15 +245,15 @@ namespace SidePortal.EditorTools
             var size = SizePresets[Mathf.Clamp(sizePresetIndex, 0, SizePresets.Length - 1)];
             if (!GridLevelRules.CanPlaceBlock(levelData, cell, size))
             {
-                status = $"Cannot place {size.x}x{size.y} block at {cell}; out of bounds or occupied.";
+                status = $"无法在 {FormatCell(cell)} 放置 {size.x}x{size.y} 块：超出边界或区域已被占用。";
                 return;
             }
 
-            Record("Place grid block");
+            Record("放置关卡块");
             levelData.AddBlock(cell, size, type);
             levelData.RemoveInvalidPortalEdges();
             Save();
-            status = $"Placed {type} block at {cell}.";
+            status = $"已在 {FormatCell(cell)} 放置{BlockTypeName(type)}。";
         }
 
         private void DeleteBlock(Vector2Int cell)
@@ -243,43 +261,43 @@ namespace SidePortal.EditorTools
             var block = GridLevelRules.FindBlockAt(levelData, cell);
             if (block == null)
             {
-                status = $"No block at {cell}.";
+                status = $"{FormatCell(cell)} 没有关卡块。";
                 return;
             }
 
-            Record("Delete grid block");
+            Record("删除关卡块");
             levelData.RemoveBlock(block.Id);
             levelData.RemoveInvalidPortalEdges();
             Save();
-            status = $"Deleted block {block.Id}.";
+            status = $"已删除 {block.Id} 号关卡块。";
         }
 
         private void SetPlayerSpawn(Vector2Int cell)
         {
             if (!IsInBounds(cell))
             {
-                status = $"Spawn cell {cell} is out of bounds.";
+                status = $"出生点 {FormatCell(cell)} 超出关卡边界。";
                 return;
             }
 
-            Record("Set player spawn");
+            Record("设置出生点");
             levelData.SetPlayerSpawn(cell);
             Save();
-            status = $"Player spawn set to {cell}.";
+            status = $"出生点已设置为 {FormatCell(cell)}。";
         }
 
         private void SetExit(Vector2Int cell)
         {
             if (!IsInBounds(cell))
             {
-                status = $"Exit cell {cell} is out of bounds.";
+                status = $"通关点 {FormatCell(cell)} 超出关卡边界。";
                 return;
             }
 
-            Record("Set exit cell");
+            Record("设置通关点");
             levelData.SetExitCell(cell);
             Save();
-            status = $"Exit set to {cell}.";
+            status = $"通关点已设置为 {FormatCell(cell)}。";
         }
 
         private void TogglePortalEdge(Vector2Int cell)
@@ -287,26 +305,26 @@ namespace SidePortal.EditorTools
             var block = GridLevelRules.FindBlockAt(levelData, cell);
             if (block == null)
             {
-                status = $"No block at {cell}; portal edges belong to blocks.";
+                status = $"{FormatCell(cell)} 没有关卡块；传送门边缘必须设置在块上。";
                 return;
             }
 
             if (!GridLevelRules.IsEdgeExposed(levelData, block, selectedEdge))
             {
-                status = $"Block {block.Id} {selectedEdge} edge touches another block; portal marker rejected.";
+                status = $"{block.Id} 号块的{EdgeName(selectedEdge)}与其他块紧贴，不能设置传送门标记。";
                 return;
             }
 
-            Record("Toggle portal edge");
+            Record("切换传送门边缘");
             if (HasPortalEdge(block.Id, selectedEdge))
             {
                 levelData.RemovePortalEdge(block.Id, selectedEdge);
-                status = $"Removed portal edge {selectedEdge} from block {block.Id}.";
+                status = $"已移除 {block.Id} 号块{EdgeName(selectedEdge)}的传送门标记。";
             }
             else
             {
                 levelData.AddOrReplacePortalEdge(block.Id, selectedEdge, allowPrimary, allowSecondary);
-                status = $"Added portal edge {selectedEdge} to block {block.Id}.";
+                status = $"已在 {block.Id} 号块{EdgeName(selectedEdge)}添加传送门标记。";
             }
 
             Save();
@@ -328,10 +346,10 @@ namespace SidePortal.EditorTools
         private void CreateLevelAsset()
         {
             var path = EditorUtility.SaveFilePanelInProject(
-                "Create Grid Level Data",
-                "NewGridLevel",
+                "创建关卡数据",
+                "新关卡数据",
                 "asset",
-                "Choose a location for the grid level asset.",
+                "选择关卡数据资产的保存位置。",
                 "Assets/Data/Levels");
 
             if (string.IsNullOrEmpty(path))
@@ -344,7 +362,7 @@ namespace SidePortal.EditorTools
             AssetDatabase.CreateAsset(asset, path);
             AssetDatabase.SaveAssets();
             levelData = asset;
-            status = $"Created {path}.";
+            status = $"已创建：{path}";
         }
 
         private static void EnsureFolder(string path)
@@ -370,6 +388,21 @@ namespace SidePortal.EditorTools
             EditorUtility.SetDirty(levelData);
             AssetDatabase.SaveAssets();
             Repaint();
+        }
+
+        private static string FormatCell(Vector2Int cell)
+        {
+            return $"({cell.x}, {cell.y})";
+        }
+
+        private static string BlockTypeName(GridBlockType type)
+        {
+            return type == GridBlockType.Obstacle ? "障碍块" : "道路/实体块";
+        }
+
+        private static string EdgeName(GridEdge edge)
+        {
+            return EdgeLabels[(int)edge];
         }
 
         private bool IsInBounds(Vector2Int cell)

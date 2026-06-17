@@ -1,53 +1,53 @@
 # 2D 横版传送门解密原型
 
-Unity 2D PC prototype scaffold for a side-scrolling puzzle platformer built around mouse-aimed portal shots and fixed portal anchors.
+这是一个 Unity 2D PC 原型，核心是“鼠标瞄准传送门 + 固定传送门锚点 + 网格块关卡编辑”。
 
-## Current Scope
+## 当前内容
 
-- Player movement: run, jump, fast fall, jump buffering, coyote time, and variable jump height.
-- Portal gun: mouse-aimed blue and yellow portals, anchor-only placement, placement validation.
-- Grid level editor: place block presets, set spawn/exit, and mark exposed block edges for portals.
-- Portal transfer: connected portal teleport with velocity remapping and cooldown.
-- Puzzle primitives: pressure switch, puzzle door, weighted box.
-- Level flow: restart current level and advance through build-index scenes.
-- Debug overlay: aim direction, hit point, surface normal, and placement rejection reason.
+- 玩家移动：跑动、跳跃、快速下坠、跳跃缓冲、土狼时间、可变跳跃高度。
+- 传送门枪：鼠标瞄准，左键蓝门，右键黄门，只能命中合法锚点生成。
+- 网格关卡编辑器：放置块预设、设置出生点/通关点、在外露边标记传送门。
+- 传送：两扇门连接后保留并转换速度。
+- 机关基础件：压力板、门、重物箱。
+- 关卡流程：重开当前关、按构建顺序进入下一关。
+- 调试面板：显示鼠标瞄准方向、命中点、法线、锚点名和失败原因。
 
-## Controls
+## 操作
 
-- Move: `A/D` or left/right arrows.
-- Jump: `Space`.
-- Aim: mouse cursor.
-- Fire blue portal: left mouse.
-- Fire yellow portal: right mouse.
-- Restart level: `R`.
+- 移动：`A/D` 或左右方向键。
+- 跳跃：`Space`。
+- 瞄准：鼠标指针。
+- 发射蓝门：鼠标左键。
+- 发射黄门：鼠标右键。
+- 重开关卡：`R`。
 
-## Unity Setup
+## Unity 使用方式
 
-1. Open this folder in Unity as a 2D project, or copy `Assets/` into an existing Unity 2D project.
-2. Open `Assets/Scenes/Level_01_Tutorial.unity`.
-3. Press Play. The scene reads `Assets/Data/Levels/Level_01_Tutorial.asset` and creates the greybox player, portal templates, camera, level geometry, exit, and debug overlay.
-4. Use `SidePortal > Grid Level Editor` to edit block-based level data.
-5. Configure `PortalGun` masks if you build custom scenes:
-   - `Portal Anchor Mask`: fixed anchor points that can receive portals.
-   - `Placement Blocking Mask`: solid geometry and puzzle objects that must block portal placement.
-   - `Portal Overlap Mask`: portal layer, used to reject overlapping portals.
-6. See `Documentation/PrototypeSetup.md` for scene and level design details.
+1. 用 Unity 打开本文件夹，或把 `Assets/` 复制进已有 Unity 2D 项目。
+2. 打开 `Assets/Scenes/Level_01_Tutorial.unity`。
+3. 按 Play。场景会读取 `Assets/Data/Levels/Level_01_Tutorial.asset`，生成灰盒玩家、传送门模板、摄像机、关卡几何、通关点和调试面板。
+4. 使用菜单 `SidePortal > 网格关卡编辑器` 编辑块式关卡数据。
+5. 如果你自建场景，需要配置 `PortalGun` 的遮罩：
+   - `Portal Anchor Mask`：可生成传送门的固定锚点层。
+   - `Placement Blocking Mask`：会阻挡传送门放置的实体层。
+   - `Portal Overlap Mask`：传送门层，用于拒绝门与门重叠。
+6. 更多关卡搭建说明见 `Documentation/PrototypeSetup.md`。
 
-## First Playable Slice
+## 第一关测试路径
 
-`Level_01_Tutorial` is a data-driven runtime-generated greybox scene. The editable source is `Assets/Data/Levels/Level_01_Tutorial.asset`, and the scene is included in Build Settings.
+`Level_01_Tutorial` 是数据驱动的运行时灰盒场景。可编辑源数据是 `Assets/Data/Levels/Level_01_Tutorial.asset`，场景已加入 Build Settings。
 
-Expected first-room solution:
+预期解法：
 
-1. Aim at the semi-transparent anchor on the start back wall and fire one portal.
-2. Aim at the semi-transparent anchor on the far exit wall and fire the other portal.
-3. Walk into the start-side portal to cross the wide pit.
-4. Touch the green exit marker to complete the level.
+1. 瞄准起点墙上的半透明锚点，发射一扇门。
+2. 瞄准远端墙上的半透明锚点，发射另一扇门。
+3. 走进起点侧传送门，跨过宽坑。
+4. 碰到绿色通关标记，完成关卡。
 
-## MVP Level Plan
+## MVP 关卡计划
 
-- Level 1: movement, jump, mouse aiming, place two portals on fixed anchors.
-- Level 2: cross a blocked space with portals.
-- Level 3: use falling velocity to launch from another portal.
-- Level 4: weighted box and pressure switch opens a door.
-- Level 5: optional combined challenge.
+- 第 1 关：移动、跳跃、鼠标瞄准、在固定锚点放置两扇门。
+- 第 2 关：用传送门跨越阻隔空间。
+- 第 3 关：利用下坠速度从另一扇门飞出。
+- 第 4 关：重物箱和压力板开门。
+- 第 5 关：可选综合挑战。

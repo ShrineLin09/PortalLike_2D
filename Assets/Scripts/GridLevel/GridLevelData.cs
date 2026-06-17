@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SidePortal.GridLevel
 {
-    [CreateAssetMenu(menuName = "SidePortal/Grid Level Data", fileName = "GridLevelData")]
+    [CreateAssetMenu(menuName = "SidePortal/网格关卡数据", fileName = "网格关卡数据")]
     public sealed class GridLevelData : ScriptableObject
     {
         [SerializeField] private int width = 24;

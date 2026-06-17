@@ -14,7 +14,7 @@ namespace SidePortal.Portals
         [SerializeField] private bool drawDebug;
 
         public PortalPlacementResult LastResult { get; private set; } =
-            PortalPlacementResult.Failed(PortalPlacementFailure.NoValidAnchorHit, "No placement attempted.");
+            PortalPlacementResult.Failed(PortalPlacementFailure.NoValidAnchorHit, "尚未尝试放置传送门。");
 
         public void ConfigureMasks(LayerMask anchorMask, LayerMask blockingMask, LayerMask overlapMask)
         {
@@ -35,7 +35,7 @@ namespace SidePortal.Portals
 
             if (hit.collider == null)
             {
-                return Store(PortalPlacementResult.Failed(PortalPlacementFailure.NoValidAnchorHit, "No valid portal anchor hit."));
+                return Store(PortalPlacementResult.Failed(PortalPlacementFailure.NoValidAnchorHit, "没有命中有效的传送门锚点。"));
             }
 
             if (!hit.collider.TryGetComponent<PortalAnchor>(out var anchor))
@@ -46,7 +46,7 @@ namespace SidePortal.Portals
                     Vector2.zero,
                     hit.point,
                     PortalPlacementFailure.NoValidAnchorHit,
-                    "Hit collider has no PortalAnchor."));
+                    "命中的碰撞体没有传送门锚点组件。"));
             }
 
             if (!anchor.IsEnabled)
@@ -57,7 +57,7 @@ namespace SidePortal.Portals
                     anchor.Normal,
                     hit.point,
                     PortalPlacementFailure.AnchorDisabled,
-                    "Portal anchor is disabled.",
+                    "传送门锚点已禁用。",
                     anchor.name));
             }
 
@@ -69,7 +69,7 @@ namespace SidePortal.Portals
                     anchor.Normal,
                     hit.point,
                     PortalPlacementFailure.PortalTypeNotAllowed,
-                    primary ? "Anchor does not allow blue portals." : "Anchor does not allow yellow portals.",
+                    primary ? "该锚点不允许放置蓝门。" : "该锚点不允许放置黄门。",
                     anchor.name));
             }
 
@@ -85,7 +85,7 @@ namespace SidePortal.Portals
                     normal,
                     hit.point,
                     PortalPlacementFailure.BlockedPortalSpace,
-                    "Portal body would overlap blocking geometry.",
+                    "传送门本体会与阻挡物重叠。",
                     anchor.name));
             }
 
@@ -97,7 +97,7 @@ namespace SidePortal.Portals
                     normal,
                     hit.point,
                     PortalPlacementFailure.OverlappingPortal,
-                    "Portal would overlap another portal.",
+                    "传送门会与已有传送门重叠。",
                     anchor.name));
             }
 
@@ -110,11 +110,11 @@ namespace SidePortal.Portals
                     normal,
                     hit.point,
                     PortalPlacementFailure.BlockedExitClearance,
-                    "Exit clearance is blocked.",
+                    "传送门出口空间被阻挡。",
                     anchor.name));
             }
 
-            return Store(new PortalPlacementResult(true, position, normal, hit.point, PortalPlacementFailure.None, "Placement accepted.", anchor.name));
+            return Store(new PortalPlacementResult(true, position, normal, hit.point, PortalPlacementFailure.None, "传送门放置成功。", anchor.name));
         }
 
         private PortalPlacementResult Store(PortalPlacementResult result)
