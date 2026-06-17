@@ -6,6 +6,7 @@ Unity 2D PC prototype scaffold for a side-scrolling puzzle platformer built arou
 
 - Player movement: run, jump, fast fall, jump buffering, coyote time, and variable jump height.
 - Portal gun: mouse-aimed blue and yellow portals, anchor-only placement, placement validation.
+- Grid level editor: place block presets, set spawn/exit, and mark exposed block edges for portals.
 - Portal transfer: connected portal teleport with velocity remapping and cooldown.
 - Puzzle primitives: pressure switch, puzzle door, weighted box.
 - Level flow: restart current level and advance through build-index scenes.
@@ -24,8 +25,8 @@ Unity 2D PC prototype scaffold for a side-scrolling puzzle platformer built arou
 
 1. Open this folder in Unity as a 2D project, or copy `Assets/` into an existing Unity 2D project.
 2. Open `Assets/Scenes/Level_01_Tutorial.unity`.
-3. Press Play. The scene contains a runtime bootstrap object that creates the greybox player, portal templates, camera, level geometry, exit, and debug overlay.
-4. Optional: when Unity licensing/editor execution is healthy, run `SidePortal > Build Playable Vertical Slice` to generate prefab-based scene assets from the editor tool.
+3. Press Play. The scene reads `Assets/Data/Levels/Level_01_Tutorial.asset` and creates the greybox player, portal templates, camera, level geometry, exit, and debug overlay.
+4. Use `SidePortal > Grid Level Editor` to edit block-based level data.
 5. Configure `PortalGun` masks if you build custom scenes:
    - `Portal Anchor Mask`: fixed anchor points that can receive portals.
    - `Placement Blocking Mask`: solid geometry and puzzle objects that must block portal placement.
@@ -34,7 +35,7 @@ Unity 2D PC prototype scaffold for a side-scrolling puzzle platformer built arou
 
 ## First Playable Slice
 
-`Level_01_Tutorial` is currently a runtime-generated greybox scene because local Unity batchmode execution was blocked by the licensing client. The gameplay content is still versioned in code and the scene is included in Build Settings.
+`Level_01_Tutorial` is a data-driven runtime-generated greybox scene. The editable source is `Assets/Data/Levels/Level_01_Tutorial.asset`, and the scene is included in Build Settings.
 
 Expected first-room solution:
 

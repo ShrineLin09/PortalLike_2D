@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e1f1ecb67f94a61a8f3423e16ac83d4, type: 3}
+  m_Name: Level_01_Tutorial
+  m_EditorClassIdentifier:
+  width: 26
+  height: 10
+  cellSize: 1
+  playerSpawn: {x: 2, y: 2}
+  exitCell: {x: 23, y: 2}
+  blocks:
+  - id: 1
+    origin: {x: 0, y: 0}
+    size: {x: 8, y: 1}
+    type: 0
+    shapeId: rect
+  - id: 2
+    origin: {x: 0, y: 1}
+    size: {x: 1, y: 5}
+    type: 0
+    shapeId: rect
+  - id: 3
+    origin: {x: 15, y: 0}
+    size: {x: 10, y: 1}
+    type: 0
+    shapeId: rect
+  - id: 4
+    origin: {x: 24, y: 1}
+    size: {x: 1, y: 5}
+    type: 0
+    shapeId: rect
+  - id: 5
+    origin: {x: 0, y: 8}
+    size: {x: 25, y: 1}
+    type: 0
+    shapeId: rect
+  - id: 6
+    origin: {x: 2, y: 5}
+    size: {x: 3, y: 1}
+    type: 0
+    shapeId: rect
+  portalEdges:
+  - blockId: 2
+    edge: 1
+    allowPrimary: 1
+    allowSecondary: 1
+  - blockId: 4
+    edge: 0
+    allowPrimary: 1
+    allowSecondary: 1
+  - blockId: 6
+    edge: 3
+    allowPrimary: 1
+    allowSecondary: 1
+  nextBlockId: 7
